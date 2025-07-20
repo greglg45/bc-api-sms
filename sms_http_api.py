@@ -162,7 +162,7 @@ def footer_html() -> str:
     )
 
 # Elements d'interface communs
-NAVBAR = """
+NAVBAR_TEMPLATE = """
     <nav class='navbar navbar-dark bg-company'>
       <div class='container-fluid'>
         <button class='navbar-toggler' type='button' data-bs-toggle='offcanvas' data-bs-target='#menu' aria-controls='menu'>
@@ -180,7 +180,7 @@ NAVBAR = """
         <ul class='nav flex-column'>
           <li class='nav-item'><a class='nav-link' href='/'>Accueil</a></li>
           <li class='nav-item'><a class='nav-link' href='/logs'>Historique SMS</a></li>
-          <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS</a></li>
+          <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS {SMS_BADGE}</a></li>
           <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/docs'>Documentation</a></li>
           <li class='nav-item'><a class='nav-link' href='/updates'>Mises à jour</a></li>
@@ -192,6 +192,24 @@ NAVBAR = """
 
 
 class SMSHandler(BaseHTTPRequestHandler):
+    def _get_sms_count(self) -> int:
+        try:
+            with Connection(
+                self.server.modem_url,
+                username=self.server.username,
+                password=self.server.password,
+            ) as connection:
+                client = Client(connection)
+                info = client.sms.sms_count()
+                return int(info.get("LocalInbox", 0))
+        except Exception:
+            return 0
+
+    def _navbar_html(self) -> str:
+        count = self._get_sms_count()
+        badge = f"<span class='badge bg-secondary ms-1'>{count}</span>"
+        return NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge)
+
     def _send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
@@ -310,7 +328,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             {FOOTER}
         </body>
         </html>
-        """.replace("{NAVBAR}", NAVBAR).replace("{FOOTER}", footer_html())
+        """.replace("{NAVBAR}", self._navbar_html()).replace("{FOOTER}", footer_html())
         body = html.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -336,7 +354,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
             "</head><body class='container-fluid px-3 py-4'>",
-            NAVBAR,
+            self._navbar_html(),
             "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
             "<h1 class='display-6 text-company mb-0'>Historique des SMS</h1>",
             "</div>",
@@ -401,7 +419,7 @@ class SMSHandler(BaseHTTPRequestHandler):
 
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
             "</head><body class='container-fluid px-3 py-4'>",
-            NAVBAR,
+            self._navbar_html(),
             "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
             "<h1 class='display-6 text-company mb-0'>SMS reçus</h1>",
             "</div>",
@@ -488,7 +506,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             {FOOTER}
         </body>
         </html>
-        """.replace("{NAVBAR}", NAVBAR).replace("{FOOTER}", footer_html())
+        """.replace("{NAVBAR}", self._navbar_html()).replace("{FOOTER}", footer_html())
         body = html.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -567,7 +585,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             {FOOTER}
         </body>
         </html>
-        """.replace("{NAVBAR}", NAVBAR).replace("{FOOTER}", footer_html())
+        """.replace("{NAVBAR}", self._navbar_html()).replace("{FOOTER}", footer_html())
         body = html.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -617,7 +635,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         if in_list:
             html_lines.append('</ul>')
         html_lines.append('</div>' + footer_html() + '</body></html>')
-        html = "".join(html_lines).replace("{NAVBAR}", NAVBAR)
+        html = "".join(html_lines).replace("{NAVBAR}", self._navbar_html())
         body = html.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
