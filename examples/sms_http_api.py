@@ -140,6 +140,32 @@ def validate_request(data):
     return recipients, sender, text.strip()
 
 
+# Elements d'interface communs
+NAVBAR = """
+    <nav class='navbar navbar-dark bg-company'>
+      <div class='container-fluid'>
+        <button class='navbar-toggler' type='button' data-bs-toggle='offcanvas' data-bs-target='#menu' aria-controls='menu'>
+          <span class='navbar-toggler-icon'></span>
+        </button>
+        <span class='navbar-brand ms-2'>API SMS BC</span>
+      </div>
+    </nav>
+    <div class='offcanvas offcanvas-start' tabindex='-1' id='menu'>
+      <div class='offcanvas-header'>
+        <h5 class='offcanvas-title'>Menu</h5>
+        <button type='button' class='btn-close' data-bs-dismiss='offcanvas' aria-label='Close'></button>
+      </div>
+      <div class='offcanvas-body'>
+        <ul class='nav flex-column'>
+          <li class='nav-item'><a class='nav-link' href='/'>Accueil</a></li>
+          <li class='nav-item'><a class='nav-link' href='/logs'>Historique SMS</a></li>
+          <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
+        </ul>
+      </div>
+    </div>
+"""
+
+
 
 class SMSHandler(BaseHTTPRequestHandler):
     def _send_json(self, status, payload):
@@ -217,9 +243,11 @@ class SMSHandler(BaseHTTPRequestHandler):
         <head>
             <meta charset='utf-8'>
             <title>Modem Health</title>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                pre { background-color: #f0f0f0; padding: 10px; }
+                .bg-company {background-color:#0060ac;}
+                .btn-company {background-color:#0060ac;border-color:#0060ac;}
             </style>
             <script>
                 async function loadHealth() {
@@ -230,14 +258,13 @@ class SMSHandler(BaseHTTPRequestHandler):
                 window.onload = loadHealth;
             </script>
         </head>
-        <body>
-            <h1>Informations du modem</h1>
-            <pre id='health'>Chargement...</pre>
-            <p><a href="/logs">Voir les messages envoyés</a></p>
-            <p><a href="/testsms">Tester l'envoi de SMS</a></p>
+        <body class='container py-4'>
+            {NAVBAR}
+            <h1 class='mb-3'>Informations du modem</h1>
+            <pre id='health' class='bg-light p-3 rounded'>Chargement...</pre>
         </body>
         </html>
-        """
+        """.replace("{NAVBAR}", NAVBAR)
         body = html.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -256,12 +283,15 @@ class SMSHandler(BaseHTTPRequestHandler):
 
         html = [
             "<html><head><meta charset='utf-8'><title>Historique SMS</title>",
-            "<style>body{font-family:Arial,sans-serif;margin:20px;}table{border-collapse:collapse;}th,td{border:1px solid #ccc;padding:4px;}th{background:#eee;}</style>",
+            "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
+            "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+            "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}</style>",
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
-            "</head><body>",
-            "<h1>Historique des SMS</h1>",
+            "</head><body class='container py-4'>",
+            NAVBAR,
+            "<h1 class='mb-3'>Historique des SMS</h1>",
             "<form method='post' action='/logs/delete'>",
-            "<table>",
+            "<table class='table table-striped'>",
             "<tr><th></th><th>Date/Heure</th><th>Expéditeur</th><th>Destinataire(s)</th><th>Message</th><th>Réponse</th></tr>",
         ]
         for row in rows:
@@ -271,9 +301,9 @@ class SMSHandler(BaseHTTPRequestHandler):
         html.extend(
             [
                 "</table>",
-                "<p><button type='button' onclick='selectAll()'>Sélectionner tout</button> <button type='submit'>Supprimer</button></p>",
+                "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
                 "</form>",
-                "<p><a href='/'>Retour</a></p></body></html>",
+                "<p><a href='/' class='btn btn-link'>Retour</a></p></body></html>",
             ]
         )
         body = "".join(html).encode("utf-8")
@@ -289,10 +319,11 @@ class SMSHandler(BaseHTTPRequestHandler):
         <head>
             <meta charset='utf-8'>
             <title>Envoyer un SMS</title>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                label { display: block; margin-top: 10px; }
-                textarea { width: 300px; height: 100px; }
+                .bg-company {background-color:#0060ac;}
+                .btn-company {background-color:#0060ac;border-color:#0060ac;}
             </style>
             <script>
                 async function sendSms(event) {
@@ -317,21 +348,24 @@ class SMSHandler(BaseHTTPRequestHandler):
                 }
             </script>
         </head>
-        <body>
-            <h1>Tester l\'envoi de SMS</h1>
-            <form id='smsForm' onsubmit='sendSms(event)'>
-                <label>Destinataire(s) (séparés par des virgules)<br>
-                    <input type='text' id='to' required>
-                </label>
-                <label>Message<br>
-                    <textarea id='text' required></textarea>
-                </label>
-                <p><button type='submit'>Envoyer</button></p>
+        <body class='container py-4'>
+            {NAVBAR}
+            <h1 class='mb-3'>Tester l\'envoi de SMS</h1>
+            <form id='smsForm' onsubmit='sendSms(event)' class='mb-3'>
+                <div class='mb-3'>
+                    <label for='to' class='form-label'>Destinataire(s) (séparés par des virgules)</label>
+                    <input type='text' id='to' class='form-control' required>
+                </div>
+                <div class='mb-3'>
+                    <label for='text' class='form-label'>Message</label>
+                    <textarea id='text' class='form-control' rows='4' required></textarea>
+                </div>
+                <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
-            <p><a href='/'>Retour</a></p>
+            <p><a href='/' class='btn btn-link'>Retour</a></p>
         </body>
         </html>
-        """
+        """.replace("{NAVBAR}", NAVBAR)
         body = html.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
