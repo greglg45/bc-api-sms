@@ -594,17 +594,27 @@ class SMSHandler(BaseHTTPRequestHandler):
                       "<h1 class='display-6 text-company mb-0'>Journal des mises à jour</h1>",
                       "</div>",
                       "<div class='container'>"]
+        in_list = False
         for line in lines:
             if line.startswith('#'):
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
                 level = line.count('#')
                 html_lines.append(f"<h{level}>{line.strip('#').strip()}</h{level}>")
             elif line.startswith('-'):
-                if not html_lines[-1].startswith('<ul'):
+                if not in_list:
                     html_lines.append('<ul>')
+                    in_list = True
                 html_lines.append(f"<li>{line[1:].strip()}</li>")
             else:
-                html_lines.append(f"<p>{line.strip()}</p>")
-        if html_lines[-1].startswith('<li'):
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                stripped = line.strip()
+                if stripped:
+                    html_lines.append(f"<p>{stripped}</p>")
+        if in_list:
             html_lines.append('</ul>')
         html_lines.append('</div>' + footer_html() + '</body></html>')
         html = "".join(html_lines).replace("{NAVBAR}", NAVBAR)
