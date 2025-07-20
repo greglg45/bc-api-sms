@@ -140,3 +140,5 @@ Quelques [exemples](examples/) se trouvent dans le dossier [/examples](examples/
 
 Consultez [le journal des mises à jour](docs/mise-a-jour.md) pour connaître les dernières évolutions. Cette page est également accessible depuis le menu de l'interface web.
 
+Pour l'installation sur Rocky Linux, consultez [ce guide](docs/installation-rocky-linux.md).
+
