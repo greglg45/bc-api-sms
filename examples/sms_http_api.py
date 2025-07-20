@@ -159,6 +159,7 @@ NAVBAR = """
         <ul class='nav flex-column'>
           <li class='nav-item'><a class='nav-link' href='/'>Accueil</a></li>
           <li class='nav-item'><a class='nav-link' href='/logs'>Historique SMS</a></li>
+          <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
         </ul>
       </div>
@@ -189,6 +190,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if self.path == "/testsms":
             self._serve_testsms()
+            return
+        if self.path.startswith("/readsms"):
+            self._serve_readsms()
             return
         if self.path != "/health":
             self.send_error(404, "Not found")
@@ -317,10 +321,72 @@ class SMSHandler(BaseHTTPRequestHandler):
                 "</table>",
                 "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
                 "</form>",
-                "</div>",
-                "<p><a href='/' class='btn btn-link'>Retour</a></p></body></html>",
+                "</div></body></html>",
             ]
         )
+        body = "".join(html).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_readsms(self):
+        parsed = urllib.parse.urlparse(self.path)
+        want_json = parsed.query == "json" or "application/json" in self.headers.get("Accept", "")
+
+        try:
+            with Connection(
+                self.server.modem_url,
+                username=self.server.username,
+                password=self.server.password,
+            ) as connection:
+                client = Client(connection)
+                messages = [m.to_dict() for m in client.sms.get_messages()]
+        except Exception as exc:
+            if want_json:
+                self._json_error(500, str(exc))
+            else:
+                body = f"<p>Erreur: {exc}</p>".encode('utf-8')
+                self.send_response(500)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            return
+
+        if want_json:
+            self._send_json(200, messages)
+            return
+
+        html = [
+            "<html><head><meta charset='utf-8'><title>SMS reçus</title>",
+            "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
+            "<link rel='stylesheet' href='baudin.css'>",
+            "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+            "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
+            "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
+            "</head><body class='container-fluid px-3 py-4'>",
+            NAVBAR,
+            "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
+            "<h1 class='display-6 text-company mb-0'>SMS reçus</h1>",
+            "</div>",
+            "<div class='container'>",
+            "<form method='post' action='/readsms/delete'>",
+            "<table class='table table-striped'>",
+            "<tr><th></th><th>Date/Heure</th><th>Expéditeur</th><th>Message</th></tr>",
+        ]
+        for m in messages:
+            html.append(
+                f"<tr><td><input type='checkbox' class='rowchk' name='ids' value='{m['Index']}'></td><td>{m['Date']}</td><td>{m['Phone']}</td><td>{m['Content']}</td></tr>"
+            )
+        html.extend([
+            "</table>",
+            "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
+            "</form>",
+            "</div></body></html>",
+        ])
+
         body = "".join(html).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -384,7 +450,6 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
             </div>
-            <p><a href='/' class='btn btn-link'>Retour</a></p>
         </body>
         </html>
         """.replace("{NAVBAR}", NAVBAR)
@@ -412,10 +477,38 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.send_header("Location", "/logs")
         self.end_headers()
 
+    def _delete_sms(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length).decode("utf-8")
+        params = urllib.parse.parse_qs(body)
+        ids = params.get("ids", [])
+
+        try:
+            with Connection(
+                self.server.modem_url,
+                username=self.server.username,
+                password=self.server.password,
+            ) as connection:
+                client = Client(connection)
+                for sms_id in ids:
+                    try:
+                        client.sms.delete_sms(int(sms_id))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+        self.send_response(303)
+        self.send_header("Location", "/readsms")
+        self.end_headers()
+
 
     def do_POST(self):
         if self.path == "/logs/delete":
             self._delete_logs()
+            return
+        if self.path == "/readsms/delete":
+            self._delete_sms()
             return
         if self.path != "/sms":
 
