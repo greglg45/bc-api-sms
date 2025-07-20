@@ -141,7 +141,7 @@ def validate_request(data):
 
 def get_last_update_date() -> str:
     """Return the most recent update date from docs/mise-a-jour.md."""
-    path = os.path.join(os.path.dirname(__file__), "..", "docs", "mise-a-jour.md")
+    path = os.path.join(os.path.dirname(__file__), "docs", "mise-a-jour.md")
     try:
         with open(path, encoding="utf-8") as f:
             for line in f:
@@ -576,7 +576,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _serve_updates(self):
-        path = os.path.join(os.path.dirname(__file__), "..", "docs", "mise-a-jour.md")
+        path = os.path.join(os.path.dirname(__file__), "docs", "mise-a-jour.md")
         try:
             with open(path, encoding="utf-8") as f:
                 lines = f.readlines()
