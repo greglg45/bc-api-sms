@@ -244,6 +244,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <meta charset='utf-8'>
             <title>Modem Health</title>
             <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
@@ -259,9 +260,11 @@ class SMSHandler(BaseHTTPRequestHandler):
             </script>
         </head>
         <body class='container py-4'>
+
             {NAVBAR}
             <h1 class='mb-3'>Informations du modem</h1>
             <pre id='health' class='bg-light p-3 rounded'>Chargement...</pre>
+
         </body>
         </html>
         """.replace("{NAVBAR}", NAVBAR)
@@ -284,6 +287,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         html = [
             "<html><head><meta charset='utf-8'><title>Historique SMS</title>",
             "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
+
             "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
             "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}</style>",
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
@@ -320,6 +324,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <meta charset='utf-8'>
             <title>Envoyer un SMS</title>
             <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
