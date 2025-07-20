@@ -56,6 +56,15 @@ install_deps() {
     done
 }
 
+# Stop the service if it exists and is currently running
+stop_service() {
+    if sudo systemctl status bc-api-sms.service >/dev/null 2>&1; then
+        if sudo systemctl is-active --quiet bc-api-sms.service; then
+            sudo systemctl stop bc-api-sms.service
+        fi
+    fi
+}
+
 # Clone or update the repository
 update_repo() {
     if [ ! -d "$INSTALL_DIR" ]; then
@@ -111,7 +120,8 @@ WantedBy=multi-user.target
 EOF
 
     sudo systemctl daemon-reload
-    sudo systemctl enable --now bc-api-sms.service
+    sudo systemctl enable bc-api-sms.service
+    sudo systemctl restart bc-api-sms.service
 }
 
 main() {
@@ -124,6 +134,7 @@ main() {
     prompt_var PORT "HTTP API port" "$PORT"
 
     install_deps
+    stop_service
     update_repo
     # Ensure the Python environment is ready after updating the repository
     setup_venv
