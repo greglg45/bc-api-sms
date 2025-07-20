@@ -136,17 +136,7 @@ Quelques [exemples](examples/) se trouvent dans le dossier [/examples](examples/
 * API HTTP SMS basique [examples/sms_http_api.py](examples/sms_http_api.py) (journalise les requêtes dans SQLite)
   * inclut maintenant un endpoint `/health` renvoyant les informations du modem (dérivées de `device_info.py` et `device_signal.py`)
 
-## Ports vers d'autres langages
-
-* TypeScript/JavaScript https://github.com/Salamek/huawei-lte-api-ts
-* PHP https://github.com/icetee/huawei-lte-api-php
-
-## Dons
-
-* 250 CZK (9,79 EUR) pour le fonds B535-232, merci @larsvinc !
-* 371,69 CZK (14,32 EUR) par Oleg Jusaew
-* 292 CZK (11,50 EUR) par Toth-Mate Akos
-
 ## Mises à jour
 
 Consultez [le journal des mises à jour](docs/mise-a-jour.md) pour connaître les dernières évolutions. Cette page est également accessible depuis le menu de l'interface web.
+
