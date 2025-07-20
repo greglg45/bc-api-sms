@@ -244,11 +244,13 @@ class SMSHandler(BaseHTTPRequestHandler):
             <meta charset='utf-8'>
             <title>Modem Health</title>
             <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <link rel='stylesheet' href='baudin.css'>
 
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
                 .btn-company {background-color:#0060ac;border-color:#0060ac;}
+                .text-company {color:#0060ac;}
             </style>
             <script>
                 async function loadHealth() {
@@ -259,11 +261,15 @@ class SMSHandler(BaseHTTPRequestHandler):
                 window.onload = loadHealth;
             </script>
         </head>
-        <body class='container py-4'>
+        <body class='container-fluid px-3 py-4'>
 
             {NAVBAR}
-            <h1 class='mb-3'>Informations du modem</h1>
-            <pre id='health' class='bg-light p-3 rounded'>Chargement...</pre>
+            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+                <h1 class='display-6 text-company mb-0'>Informations du modem</h1>
+            </div>
+            <div class='container'>
+                <pre id='health' class='bg-light p-3 rounded'>Chargement...</pre>
+            </div>
 
         </body>
         </html>
@@ -287,13 +293,17 @@ class SMSHandler(BaseHTTPRequestHandler):
         html = [
             "<html><head><meta charset='utf-8'><title>Historique SMS</title>",
             "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
+            "<link rel='stylesheet' href='baudin.css'>",
 
             "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
-            "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}</style>",
+            "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
-            "</head><body class='container py-4'>",
+            "</head><body class='container-fluid px-3 py-4'>",
             NAVBAR,
-            "<h1 class='mb-3'>Historique des SMS</h1>",
+            "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
+            "<h1 class='display-6 text-company mb-0'>Historique des SMS</h1>",
+            "</div>",
+            "<div class='container'>",
             "<form method='post' action='/logs/delete'>",
             "<table class='table table-striped'>",
             "<tr><th></th><th>Date/Heure</th><th>Expéditeur</th><th>Destinataire(s)</th><th>Message</th><th>Réponse</th></tr>",
@@ -307,6 +317,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 "</table>",
                 "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
                 "</form>",
+                "</div>",
                 "<p><a href='/' class='btn btn-link'>Retour</a></p></body></html>",
             ]
         )
@@ -324,11 +335,13 @@ class SMSHandler(BaseHTTPRequestHandler):
             <meta charset='utf-8'>
             <title>Envoyer un SMS</title>
             <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <link rel='stylesheet' href='baudin.css'>
 
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
                 .btn-company {background-color:#0060ac;border-color:#0060ac;}
+                .text-company {color:#0060ac;}
             </style>
             <script>
                 async function sendSms(event) {
@@ -353,9 +366,12 @@ class SMSHandler(BaseHTTPRequestHandler):
                 }
             </script>
         </head>
-        <body class='container py-4'>
+        <body class='container-fluid px-3 py-4'>
             {NAVBAR}
-            <h1 class='mb-3'>Tester l\'envoi de SMS</h1>
+            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+                <h1 class='display-6 text-company mb-0'>Tester l\'envoi de SMS</h1>
+            </div>
+            <div class='container'>
             <form id='smsForm' onsubmit='sendSms(event)' class='mb-3'>
                 <div class='mb-3'>
                     <label for='to' class='form-label'>Destinataire(s) (séparés par des virgules)</label>
@@ -367,6 +383,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 </div>
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
+            </div>
             <p><a href='/' class='btn btn-link'>Retour</a></p>
         </body>
         </html>
