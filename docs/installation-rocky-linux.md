@@ -33,7 +33,12 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/data/bc-api-sms
-ExecStart=/data/bc-api-sms/venv/bin/python sms_http_api.py
+
+# Adjust the URL and credentials for your router
+ExecStart=/data/bc-api-sms/venv/bin/python sms_http_api.py \
+    http://192.168.8.1/ --username admin --password <PASSWORD> \
+    --host 0.0.0.0 --port 80
+
 Restart=on-failure
 
 [Install]
