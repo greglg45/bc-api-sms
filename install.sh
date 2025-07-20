@@ -5,6 +5,35 @@
 
 set -e
 
+# Prompt user for a value with an optional default.
+prompt_var() {
+    local var_name=$1
+    local prompt=$2
+    local default=$3
+    local input
+    read -r -p "$prompt [${default}]: " input
+    if [ -z "$input" ]; then
+        eval "$var_name=\"$default\""
+    else
+        eval "$var_name=\"$input\""
+    fi
+}
+
+# Prompt user for a password (input hidden) with an optional default.
+prompt_password_var() {
+    local var_name=$1
+    local prompt=$2
+    local default=$3
+    local input
+    read -r -s -p "$prompt [${default}]: " input
+    echo
+    if [ -z "$input" ]; then
+        eval "$var_name=\"$default\""
+    else
+        eval "$var_name=\"$input\""
+    fi
+}
+
 REPO_URL="https://github.com/greglg45/bc-api-sms.git"
 INSTALL_DIR="/data/bc-api-sms"
 VERSION_FILE="$INSTALL_DIR/VERSION"
@@ -55,8 +84,11 @@ setup_venv() {
     fi
 
     # Activate the venv in a subshell to install dependencies
-    sudo -E bash -c "source '$INSTALL_DIR/venv/bin/activate' && \
-        pip install --cert \"$PIP_CERT\" -r '$INSTALL_DIR/requirements.txt'"
+    local pip_cmd="pip install -r '$INSTALL_DIR/requirements.txt'"
+    if [ -n "$PIP_CERT" ]; then
+        pip_cmd="pip install --cert \"$PIP_CERT\" -r '$INSTALL_DIR/requirements.txt'"
+    fi
+    sudo -E bash -c "source '$INSTALL_DIR/venv/bin/activate' && $pip_cmd"
 }
 
 # Create and enable the systemd service for the HTTP API
@@ -83,6 +115,14 @@ EOF
 }
 
 main() {
+    prompt_var INSTALL_DIR "Installation directory" "$INSTALL_DIR"
+    VERSION_FILE="$INSTALL_DIR/VERSION"
+    prompt_var ROUTER_URL "Router URL" "$ROUTER_URL"
+    prompt_var ROUTER_USERNAME "Router username" "$ROUTER_USERNAME"
+    prompt_password_var ROUTER_PASSWORD "Router password" "$ROUTER_PASSWORD"
+    prompt_var HOST "HTTP API host" "$HOST"
+    prompt_var PORT "HTTP API port" "$PORT"
+
     install_deps
     update_repo
     # Ensure the Python environment is ready after updating the repository
