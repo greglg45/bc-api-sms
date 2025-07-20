@@ -50,3 +50,19 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 sudo systemctl enable --now bc-api-sms.service
 ```
+
+## Updating an existing clone
+
+If an older copy of the repository already exists on the server, pull the
+latest changes and reinstall the Python requirements:
+
+```bash
+cd /data/bc-api-sms
+git pull
+source venv/bin/activate
+pip install -r requirements.txt
+sudo systemctl restart bc-api-sms.service
+```
+
+This brings the clone up to date and restarts the `bc-api-sms` service with the
+new code.
