@@ -146,3 +146,7 @@ Quelques [exemples](examples/) se trouvent dans le dossier [/examples](examples/
 * 250 CZK (9,79 EUR) pour le fonds B535-232, merci @larsvinc !
 * 371,69 CZK (14,32 EUR) par Oleg Jusaew
 * 292 CZK (11,50 EUR) par Toth-Mate Akos
+
+## Mises à jour
+
+Consultez [le journal des mises à jour](docs/mise-a-jour.md) pour connaître les dernières évolutions.
