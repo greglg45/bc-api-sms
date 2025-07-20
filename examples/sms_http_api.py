@@ -365,6 +365,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<link rel='stylesheet' href='baudin.css'>",
             "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
             "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
+
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
             "</head><body class='container-fluid px-3 py-4'>",
             NAVBAR,
@@ -372,6 +373,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<h1 class='display-6 text-company mb-0'>SMS reçus</h1>",
             "</div>",
             "<div class='container'>",
+
             "<form method='post' action='/readsms/delete'>",
             "<table class='table table-striped'>",
             "<tr><th></th><th>Date/Heure</th><th>Expéditeur</th><th>Message</th></tr>",
