@@ -33,7 +33,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/data/bc-api-sms
-ExecStart=/data/bc-api-sms/venv/bin/python examples/sms_http_api.py
+ExecStart=/data/bc-api-sms/venv/bin/python sms_http_api.py
 Restart=on-failure
 
 [Install]
