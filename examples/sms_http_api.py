@@ -139,6 +139,27 @@ def validate_request(data):
         raise ValueError("'text' must be a non-empty string")
     return recipients, sender, text.strip()
 
+def get_last_update_date() -> str:
+    """Return the most recent update date from docs/mise-a-jour.md."""
+    path = os.path.join(os.path.dirname(__file__), "..", "docs", "mise-a-jour.md")
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if line.lstrip().startswith("-"):
+                    m = re.search(r"\*\*(.+?)\*\*", line)
+                    if m:
+                        return m.group(1)
+    except Exception:
+        pass
+    return datetime.utcnow().strftime("%d/%m/%Y")
+
+def footer_html() -> str:
+    date = get_last_update_date()
+    return (
+        "<footer class='text-center mt-4'>"
+        f"Dernière mise à jour : {date} - &copy; DSI Baudinchateauneuf"
+        "</footer>"
+    )
 
 # Elements d'interface communs
 NAVBAR = """
@@ -162,6 +183,7 @@ NAVBAR = """
           <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/docs'>Documentation</a></li>
+          <li class='nav-item'><a class='nav-link' href='/updates'>Mises à jour</a></li>
         </ul>
       </div>
     </div>
@@ -194,6 +216,12 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if self.path == "/docs":
             self._serve_docs()
+            return
+        if self.path == "/updates":
+            self._serve_updates()
+            return
+        if self.path == "/baudin.css":
+            self._serve_css()
             return
         if self.path.startswith("/readsms"):
             self._serve_readsms()
@@ -279,9 +307,10 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <pre id='health' class='bg-light p-3 rounded'>Chargement...</pre>
             </div>
 
+            {FOOTER}
         </body>
         </html>
-        """.replace("{NAVBAR}", NAVBAR)
+        """.replace("{NAVBAR}", NAVBAR).replace("{FOOTER}", footer_html())
         body = html.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -325,7 +354,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 "</table>",
                 "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
                 "</form>",
-                "</div></body></html>",
+                "</div>" + footer_html() + "</body></html>",
             ]
         )
         body = "".join(html).encode("utf-8")
@@ -390,7 +419,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "</table>",
             "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
             "</form>",
-            "</div></body></html>",
+            "</div>" + footer_html() + "</body></html>",
         ])
 
         body = "".join(html).encode("utf-8")
@@ -456,9 +485,10 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
             </div>
+            {FOOTER}
         </body>
         </html>
-        """.replace("{NAVBAR}", NAVBAR)
+        """.replace("{NAVBAR}", NAVBAR).replace("{FOOTER}", footer_html())
         body = html.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -534,15 +564,69 @@ class SMSHandler(BaseHTTPRequestHandler):
                     </tbody>
                 </table>
             </div>
+            {FOOTER}
         </body>
         </html>
-        """.replace("{NAVBAR}", NAVBAR)
+        """.replace("{NAVBAR}", NAVBAR).replace("{FOOTER}", footer_html())
         body = html.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _serve_updates(self):
+        path = os.path.join(os.path.dirname(__file__), "..", "docs", "mise-a-jour.md")
+        try:
+            with open(path, encoding="utf-8") as f:
+                lines = f.readlines()
+        except Exception:
+            lines = ["Impossible de charger le journal des mises à jour."]
+
+        html_lines = ["<html><head><meta charset='utf-8'><title>Mises à jour</title>",
+                      "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
+                      "<link rel='stylesheet' href='baudin.css'>",
+                      "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+                      "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
+                      "</head><body class='container-fluid px-3 py-4'>",
+                      "{NAVBAR}",
+                      "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
+                      "<h1 class='display-6 text-company mb-0'>Journal des mises à jour</h1>",
+                      "</div>",
+                      "<div class='container'>"]
+        for line in lines:
+            if line.startswith('#'):
+                level = line.count('#')
+                html_lines.append(f"<h{level}>{line.strip('#').strip()}</h{level}>")
+            elif line.startswith('-'):
+                if not html_lines[-1].startswith('<ul'):
+                    html_lines.append('<ul>')
+                html_lines.append(f"<li>{line[1:].strip()}</li>")
+            else:
+                html_lines.append(f"<p>{line.strip()}</p>")
+        if html_lines[-1].startswith('<li'):
+            html_lines.append('</ul>')
+        html_lines.append('</div>' + footer_html() + '</body></html>')
+        html = "".join(html_lines).replace("{NAVBAR}", NAVBAR)
+        body = html.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_css(self):
+        path = os.path.join(os.path.dirname(__file__), 'baudin.css')
+        try:
+            with open(path, 'rb') as f:
+                css = f.read()
+        except Exception:
+            css = b''
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/css')
+        self.send_header('Content-Length', str(len(css)))
+        self.end_headers()
+        self.wfile.write(css)
 
     def _delete_logs(self):
         content_length = int(self.headers.get("Content-Length", 0))
