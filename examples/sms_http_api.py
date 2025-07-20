@@ -161,6 +161,7 @@ NAVBAR = """
           <li class='nav-item'><a class='nav-link' href='/logs'>Historique SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
+          <li class='nav-item'><a class='nav-link' href='/docs'>Documentation</a></li>
         </ul>
       </div>
     </div>
@@ -190,6 +191,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if self.path == "/testsms":
             self._serve_testsms()
+            return
+        if self.path == "/docs":
+            self._serve_docs()
             return
         if self.path.startswith("/readsms"):
             self._serve_readsms()
@@ -451,6 +455,84 @@ class SMSHandler(BaseHTTPRequestHandler):
                 </div>
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
+            </div>
+        </body>
+        </html>
+        """.replace("{NAVBAR}", NAVBAR)
+        body = html.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_docs(self):
+        html = """
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>Documentation API</title>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <link rel='stylesheet' href='baudin.css'>
+
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <style>
+                .bg-company {background-color:#0060ac;}
+                .btn-company {background-color:#0060ac;border-color:#0060ac;}
+                .text-company {color:#0060ac;}
+            </style>
+        </head>
+        <body class='container-fluid px-3 py-4'>
+            {NAVBAR}
+            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+                <h1 class='display-6 text-company mb-0'>Documentation de l\'API</h1>
+            </div>
+            <div class='container'>
+                <table class='table table-striped'>
+                    <thead>
+                        <tr><th>Méthode</th><th>Endpoint</th><th>Requête</th><th>Réponse</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>POST</td>
+                            <td><code>/sms</code></td>
+                            <td>
+                                <pre>{"to": ["+33612345678"], "from": "expediteur", "text": "message"}</pre>
+                            </td>
+                            <td>200 OK avec <code>OK</code> ou JSON <code>{"error": str}</code></td>
+                        </tr>
+                        <tr>
+                            <td>GET</td>
+                            <td><code>/health</code></td>
+                            <td>-</td>
+                            <td>200 JSON sur l\'état du modem</td>
+                        </tr>
+                        <tr>
+                            <td>GET</td>
+                            <td><code>/readsms</code></td>
+                            <td>Ajouter <code>?json</code> pour obtenir du JSON</td>
+                            <td>200 HTML ou JSON</td>
+                        </tr>
+                        <tr>
+                            <td>POST</td>
+                            <td><code>/readsms/delete</code></td>
+                            <td>Formulaire <code>ids=1&amp;ids=2...</code></td>
+                            <td>303 redirige vers <code>/readsms</code></td>
+                        </tr>
+                        <tr>
+                            <td>GET</td>
+                            <td><code>/logs</code></td>
+                            <td>-</td>
+                            <td>200 HTML</td>
+                        </tr>
+                        <tr>
+                            <td>POST</td>
+                            <td><code>/logs/delete</code></td>
+                            <td>Formulaire <code>ids=1&amp;ids=2...</code></td>
+                            <td>303 redirige vers <code>/logs</code></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </body>
         </html>
