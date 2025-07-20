@@ -55,7 +55,8 @@ setup_venv() {
     fi
 
     # Activate the venv in a subshell to install dependencies
-    sudo bash -c "source '$INSTALL_DIR/venv/bin/activate' && pip install -r '$INSTALL_DIR/requirements.txt'"
+    sudo -E bash -c "source '$INSTALL_DIR/venv/bin/activate' && \
+        pip install --cert \"$PIP_CERT\" -r '$INSTALL_DIR/requirements.txt'"
 }
 
 # Create and enable the systemd service for the HTTP API
