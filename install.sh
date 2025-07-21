@@ -45,6 +45,8 @@ ROUTER_PASSWORD="password"
 HOST="0.0.0.0"
 PORT="80"
 API_KEY=""
+CERTFILE=""
+KEYFILE=""
 
 # Install required packages if missing
 install_deps() {
@@ -115,6 +117,10 @@ setup_service() {
     if [ -n "$API_KEY" ]; then
         api_key_arg=" --api-key $API_KEY"
     fi
+    local https_args=""
+    if [ -n "$CERTFILE" ] && [ -n "$KEYFILE" ]; then
+        https_args=" --certfile $CERTFILE --keyfile $KEYFILE"
+    fi
     sudo tee /etc/systemd/system/bc-api-sms.service >/dev/null <<EOF
 [Unit]
 Description=bc-api-sms HTTP API
@@ -125,7 +131,7 @@ Type=simple
 WorkingDirectory=$INSTALL_DIR
 ExecStart=$INSTALL_DIR/venv/bin/python sms_http_api.py \
     $ROUTER_URL --username $ROUTER_USERNAME --password $ROUTER_PASSWORD \
-    --host $HOST --port $PORT$api_key_arg
+    --host $HOST --port $PORT$api_key_arg$https_args
 Restart=on-failure
 
 [Install]
@@ -146,6 +152,8 @@ main() {
     prompt_var HOST "HTTP API host" "$HOST"
     prompt_var PORT "HTTP API port" "$PORT"
     prompt_var API_KEY "API key (blank to disable)" "$API_KEY"
+    prompt_var CERTFILE "TLS certificate file (blank to disable HTTPS)" "$CERTFILE"
+    prompt_var KEYFILE "TLS private key file" "$KEYFILE"
 
     install_deps
     stop_service
