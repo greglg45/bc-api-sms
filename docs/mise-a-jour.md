@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **22 juillet 2025** : ajout d'un bouton pour passer du thème clair au thème sombre.
 - **21 juillet 2025** : sécurisation de l'affichage HTML des SMS dans les pages `logs` et `readsms`.
 - **21 juillet 2025** : refonte en modules (`sms_api`) et simplification de `sms_http_api.py`.
 - **21 juillet 2025** : ajout d'un champ pour saisir la clef `X-API-KEY` dans la page "Test SMS".
