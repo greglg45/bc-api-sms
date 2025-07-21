@@ -68,9 +68,13 @@ stop_service() {
 update_repo() {
     if [ ! -d "$INSTALL_DIR" ]; then
         sudo git clone "$REPO_URL" "$INSTALL_DIR"
-    else
+    elif [ -d "$INSTALL_DIR/.git" ]; then
         sudo git -C "$INSTALL_DIR" fetch --tags
         sudo git -C "$INSTALL_DIR" pull --ff-only
+    else
+        echo "Directory $INSTALL_DIR exists but is not a git repository; re-cloning" >&2
+        sudo rm -rf "$INSTALL_DIR"
+        sudo git clone "$REPO_URL" "$INSTALL_DIR"
     fi
 }
 

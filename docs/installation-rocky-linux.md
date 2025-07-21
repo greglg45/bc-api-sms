@@ -24,7 +24,9 @@ cd /data/bc-api-sms
 
 An `install.sh` helper script is provided to perform these steps automatically.
 Run it as root and follow the prompts. The script now asks for the TLS certificate
-and key so the service can be served over HTTPS.
+and key so the service can be served over HTTPS. It will also clone the
+repository if needed and recreate the target directory should it not already
+contain a valid Git checkout.
 
 ## Set up the Python environment
 ```bash
