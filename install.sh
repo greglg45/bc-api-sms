@@ -51,7 +51,7 @@ KEYFILE=""
 # Install required packages if missing
 install_deps() {
     # Python virtualenv is used to isolate dependencies
-    local pkgs=(git python3 python3-pip python-pip python3-virtualenv policycoreutils-python-utils)
+    local pkgs=(git python3 python3-pip python-pip policycoreutils-python-utils)
     sudo dnf install -y "${pkgs[@]}"
 }
 
