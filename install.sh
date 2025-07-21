@@ -49,12 +49,8 @@ API_KEY=""
 # Install required packages if missing
 install_deps() {
     # Python virtualenv is used to isolate dependencies
-    local pkgs=(git python3 python3-pip python3-virtualenv)
-    for pkg in "${pkgs[@]}"; do
-        if ! command -v ${pkg%%-*} >/dev/null 2>&1; then
-            sudo dnf install -y "$pkg"
-        fi
-    done
+    local pkgs=(git python3 python3-pip python-pip python3-virtualenv policycoreutils-python-utils)
+    sudo dnf install -y "${pkgs[@]}"
 }
 
 # Stop the service if it exists and is currently running
@@ -101,6 +97,18 @@ setup_venv() {
     sudo -E bash -c "source '$INSTALL_DIR/venv/bin/activate' && $pip_cmd"
 }
 
+# Adjust SELinux context for the virtual environment so systemd can
+# execute the Python binary when SELinux is enforcing.
+configure_selinux() {
+    if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" = "Enforcing" ]; then
+        if ! command -v semanage >/dev/null 2>&1; then
+            sudo dnf install -y policycoreutils-python-utils
+        fi
+        sudo semanage fcontext -a -t bin_t "$INSTALL_DIR/venv/bin(/.*)?"
+        sudo restorecon -R "$INSTALL_DIR/venv/bin"
+    fi
+}
+
 # Create and enable the systemd service for the HTTP API
 setup_service() {
     local api_key_arg=""
@@ -144,6 +152,7 @@ main() {
     update_repo
     # Ensure the Python environment is ready after updating the repository
     setup_venv
+    configure_selinux
 
     local repo_version=$(get_repo_version)
     local current_version=""
