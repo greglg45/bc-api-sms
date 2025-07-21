@@ -3,6 +3,7 @@ import os
 import sqlite3
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
+import html
 
 from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
@@ -263,7 +264,17 @@ class SMSHandler(BaseHTTPRequestHandler):
         ]
         for row in rows:
             html.append(
-                f"<tr><td><input type='checkbox' class='rowchk' name='ids' value='{row['id']}'></td><td>{row['timestamp']}</td><td>{row['sender'] or ''}</td><td>{row['phone']}</td><td>{row['message']}</td><td>{row['response']}</td></tr>"
+                (
+                    "<tr>"
+                    "<td><input type='checkbox' class='rowchk' name='ids' value='"
+                    f"{row['id']}'></td>"
+                    f"<td>{html.escape(row['timestamp'])}</td>"
+                    f"<td>{html.escape(row['sender'] or '')}</td>"
+                    f"<td>{html.escape(row['phone'])}</td>"
+                    f"<td>{html.escape(row['message'])}</td>"
+                    f"<td>{html.escape(row['response'])}</td>"
+                    "</tr>"
+                )
             )
         html.extend(
             [
@@ -329,7 +340,15 @@ class SMSHandler(BaseHTTPRequestHandler):
         ]
         for m in messages:
             html.append(
-                f"<tr><td><input type='checkbox' class='rowchk' name='ids' value='{m['Index']}'></td><td>{m['Date']}</td><td>{m['Phone']}</td><td>{m['Content']}</td></tr>"
+                (
+                    "<tr>"
+                    "<td><input type='checkbox' class='rowchk' name='ids' value='"
+                    f"{m['Index']}'></td>"
+                    f"<td>{html.escape(m['Date'])}</td>"
+                    f"<td>{html.escape(m['Phone'])}</td>"
+                    f"<td>{html.escape(m['Content'])}</td>"
+                    "</tr>"
+                )
             )
         html.extend([
             "</table>",
