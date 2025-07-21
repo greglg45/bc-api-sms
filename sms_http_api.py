@@ -31,6 +31,164 @@ from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
 from huawei_lte_api.enums.client import ResponseEnum
 
+# OpenAPI specification describing the available endpoints. This is served at
+# ``/openapi.json`` and used by the Swagger UI page.
+OPENAPI_SPEC = {
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SMS HTTP API",
+        "version": "1.0.0",
+    },
+    "paths": {
+        "/sms": {
+            "post": {
+                "summary": "Send an SMS message",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "to": {
+                                        "type": "array",
+                                        "items": {"type": "string"},
+                                        "description": "List of recipients",
+                                    },
+                                    "from": {
+                                        "type": "string",
+                                        "description": "Sender identifier",
+                                    },
+                                    "text": {
+                                        "type": "string",
+                                        "description": "Message body",
+                                    },
+                                },
+                                "required": ["to", "from", "text"],
+                            }
+                        }
+                    },
+                },
+                "responses": {
+                    "200": {
+                        "description": "SMS sent",
+                        "content": {
+                            "text/plain": {"schema": {"type": "string", "example": "OK"}},
+                        },
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {"error": {"type": "string"}},
+                                }
+                            }
+                        },
+                    },
+                    "401": {"description": "Invalid API key"},
+                    "500": {"description": "Failed to send SMS"},
+                },
+            }
+        },
+        "/health": {
+            "get": {
+                "summary": "Return modem status information",
+                "responses": {
+                    "200": {
+                        "description": "Status information",
+                        "content": {"application/json": {"schema": {"type": "object"}}},
+                    },
+                    "500": {"description": "Unable to retrieve status"},
+                },
+            }
+        },
+        "/readsms": {
+            "get": {
+                "summary": "List received SMS messages",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "json",
+                        "required": False,
+                        "schema": {"type": "string"},
+                        "description": "Return JSON when present",
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SMS list or HTML page",
+                        "content": {
+                            "application/json": {"schema": {"type": "array", "items": {"type": "object"}}},
+                            "text/html": {"schema": {"type": "string"}},
+                        },
+                    }
+                },
+            }
+        },
+        "/readsms/delete": {
+            "post": {
+                "summary": "Delete SMS messages by id",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ids": {
+                                        "type": "array",
+                                        "items": {"type": "integer"},
+                                    }
+                                },
+                                "required": ["ids"],
+                            }
+                        }
+                    },
+                },
+                "responses": {
+                    "303": {"description": "Redirect to /readsms"}
+                },
+            }
+        },
+        "/logs": {
+            "get": {
+                "summary": "Show SMS send history",
+                "responses": {
+                    "200": {
+                        "description": "HTML page with logs",
+                        "content": {"text/html": {"schema": {"type": "string"}}},
+                    }
+                },
+            }
+        },
+        "/logs/delete": {
+            "post": {
+                "summary": "Delete log entries",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ids": {
+                                        "type": "array",
+                                        "items": {"type": "integer"},
+                                    }
+                                },
+                                "required": ["ids"],
+                            }
+                        }
+                    },
+                },
+                "responses": {"303": {"description": "Redirect to /logs"}},
+            }
+        },
+    },
+}
+
 
 SIGNAL_LEVELS = {
     0: "     ",
@@ -225,6 +383,12 @@ class SMSHandler(BaseHTTPRequestHandler):
 
         if self.path == "/":
             self._serve_index()
+            return
+        if self.path == "/openapi.json":
+            self._serve_openapi_json()
+            return
+        if self.path == "/swagger":
+            self._serve_swagger()
             return
         if self.path == "/logs":
             self._serve_logs()
@@ -545,6 +709,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <h1 class='display-6 text-company mb-0'>Documentation de l\'API</h1>
             </div>
             <div class='container'>
+                <p><a href='/swagger'>Swagger UI</a> - <a href='/openapi.json'>OpenAPI JSON</a></p>
                 <table class='table table-striped'>
                     <thead>
                         <tr><th>Méthode</th><th>Endpoint</th><th>Requête</th><th>Réponse</th></tr>
@@ -664,6 +829,49 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(css)))
         self.end_headers()
         self.wfile.write(css)
+
+    def _serve_openapi_json(self):
+        body = json.dumps(OPENAPI_SPEC, indent=2).encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_swagger(self):
+        html = f"""
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>Swagger UI</title>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <link rel='stylesheet' href='baudin.css'>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css'>
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js'></script>
+            <style>.bg-company{{background-color:#0060ac;}}</style>
+        </head>
+        <body class='container-fluid px-3 py-4'>
+            {self._navbar_html()}
+            <div id='swagger-ui'></div>
+            <script>
+            window.onload = function() {{
+                SwaggerUIBundle({{
+                    url: '/openapi.json',
+                    dom_id: '#swagger-ui'
+                }});
+            }};
+            </script>
+            {footer_html()}
+        </body>
+        </html>
+        """
+        body = html.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _delete_logs(self):
         content_length = int(self.headers.get("Content-Length", 0))
