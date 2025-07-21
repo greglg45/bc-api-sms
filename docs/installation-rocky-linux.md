@@ -7,8 +7,12 @@
 
 Install basic packages:
 ```bash
-sudo dnf install -y python3 python3-virtualenv git
+sudo dnf install -y python3 git
 ```
+
+Python 3 on Rocky Linux 9 includes the ``venv`` module used to create
+virtual environments, so no separate ``python3-virtualenv`` package is
+required.
 
 ## Clone the repository
 ```bash
@@ -20,7 +24,9 @@ cd /data/bc-api-sms
 
 An `install.sh` helper script is provided to perform these steps automatically.
 Run it as root and follow the prompts. The script now asks for the TLS certificate
-and key so the service can be served over HTTPS.
+and key so the service can be served over HTTPS. It will also clone the
+repository if needed and recreate the target directory should it not already
+contain a valid Git checkout.
 
 ## Set up the Python environment
 ```bash
