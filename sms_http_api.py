@@ -674,8 +674,11 @@ class SMSHandler(BaseHTTPRequestHandler):
         conn.row_factory = sqlite3.Row
         ensure_logs_table(conn)
         if ids:
-            placeholders = ",".join("?" for _ in ids)
-            conn.execute(f"DELETE FROM logs WHERE id IN ({placeholders})", ids)
+            # Use executemany with parameterized queries to avoid SQL injection
+            conn.executemany(
+                "DELETE FROM logs WHERE id = ?",
+                [(log_id,) for log_id in ids],
+            )
             conn.commit()
         conn.close()
         self.send_response(303)
