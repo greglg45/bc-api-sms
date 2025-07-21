@@ -33,162 +33,7 @@ from huawei_lte_api.enums.client import ResponseEnum
 
 # OpenAPI specification describing the available endpoints. This is served at
 # ``/openapi.json`` and used by the Swagger UI page.
-OPENAPI_SPEC = {
-    "openapi": "3.0.0",
-    "info": {
-        "title": "SMS HTTP API",
-        "version": "1.0.0",
-    },
-    "paths": {
-        "/sms": {
-            "post": {
-                "summary": "Send an SMS message",
-                "requestBody": {
-                    "required": True,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "to": {
-                                        "type": "array",
-                                        "items": {"type": "string"},
-                                        "description": "List of recipients",
-                                    },
-                                    "from": {
-                                        "type": "string",
-                                        "description": "Sender identifier",
-                                    },
-                                    "text": {
-                                        "type": "string",
-                                        "description": "Message body",
-                                    },
-                                },
-                                "required": ["to", "from", "text"],
-                            }
-                        }
-                    },
-                },
-                "responses": {
-                    "200": {
-                        "description": "SMS sent",
-                        "content": {
-                            "text/plain": {"schema": {"type": "string", "example": "OK"}},
-                        },
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {"error": {"type": "string"}},
-                                }
-                            }
-                        },
-                    },
-                    "401": {"description": "Invalid API key"},
-                    "500": {"description": "Failed to send SMS"},
-                },
-            }
-        },
-        "/health": {
-            "get": {
-                "summary": "Return modem status information",
-                "responses": {
-                    "200": {
-                        "description": "Status information",
-                        "content": {"application/json": {"schema": {"type": "object"}}},
-                    },
-                    "500": {"description": "Unable to retrieve status"},
-                },
-            }
-        },
-        "/readsms": {
-            "get": {
-                "summary": "List received SMS messages",
-                "parameters": [
-                    {
-                        "in": "query",
-                        "name": "json",
-                        "required": False,
-                        "schema": {"type": "string"},
-                        "description": "Return JSON when present",
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SMS list or HTML page",
-                        "content": {
-                            "application/json": {"schema": {"type": "array", "items": {"type": "object"}}},
-                            "text/html": {"schema": {"type": "string"}},
-                        },
-                    }
-                },
-            }
-        },
-        "/readsms/delete": {
-            "post": {
-                "summary": "Delete SMS messages by id",
-                "requestBody": {
-                    "required": True,
-                    "content": {
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "ids": {
-                                        "type": "array",
-                                        "items": {"type": "integer"},
-                                    }
-                                },
-                                "required": ["ids"],
-                            }
-                        }
-                    },
-                },
-                "responses": {
-                    "303": {"description": "Redirect to /readsms"}
-                },
-            }
-        },
-        "/logs": {
-            "get": {
-                "summary": "Show SMS send history",
-                "responses": {
-                    "200": {
-                        "description": "HTML page with logs",
-                        "content": {"text/html": {"schema": {"type": "string"}}},
-                    }
-                },
-            }
-        },
-        "/logs/delete": {
-            "post": {
-                "summary": "Delete log entries",
-                "requestBody": {
-                    "required": True,
-                    "content": {
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "ids": {
-                                        "type": "array",
-                                        "items": {"type": "integer"},
-                                    }
-                                },
-                                "required": ["ids"],
-                            }
-                        }
-                    },
-                },
-                "responses": {"303": {"description": "Redirect to /logs"}},
-            }
-        },
-    },
-}
-
+OPENAPI_PATH = os.path.join(os.path.dirname(__file__), "openapi.json")
 
 SIGNAL_LEVELS = {
     0: "     ",
@@ -831,7 +676,11 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.wfile.write(css)
 
     def _serve_openapi_json(self):
-        body = json.dumps(OPENAPI_SPEC, indent=2).encode('utf-8')
+        try:
+            with open(OPENAPI_PATH, 'rb') as f:
+                body = f.read()
+        except Exception:
+            body = b"{}"
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Content-Length', str(len(body)))
