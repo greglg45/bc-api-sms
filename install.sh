@@ -44,6 +44,7 @@ ROUTER_USERNAME="admin"
 ROUTER_PASSWORD="password"
 HOST="0.0.0.0"
 PORT="80"
+API_KEY=""
 
 # Install required packages if missing
 install_deps() {
@@ -102,6 +103,10 @@ setup_venv() {
 
 # Create and enable the systemd service for the HTTP API
 setup_service() {
+    local api_key_arg=""
+    if [ -n "$API_KEY" ]; then
+        api_key_arg=" --api-key $API_KEY"
+    fi
     sudo tee /etc/systemd/system/bc-api-sms.service >/dev/null <<EOF
 [Unit]
 Description=bc-api-sms HTTP API
@@ -112,7 +117,7 @@ Type=simple
 WorkingDirectory=$INSTALL_DIR
 ExecStart=$INSTALL_DIR/venv/bin/python sms_http_api.py \
     $ROUTER_URL --username $ROUTER_USERNAME --password $ROUTER_PASSWORD \
-    --host $HOST --port $PORT
+    --host $HOST --port $PORT$api_key_arg
 Restart=on-failure
 
 [Install]
@@ -132,6 +137,7 @@ main() {
     prompt_password_var ROUTER_PASSWORD "Router password" "$ROUTER_PASSWORD"
     prompt_var HOST "HTTP API host" "$HOST"
     prompt_var PORT "HTTP API port" "$PORT"
+    prompt_var API_KEY "API key (blank to disable)" "$API_KEY"
 
     install_deps
     stop_service
