@@ -470,10 +470,15 @@ class SMSHandler(BaseHTTPRequestHandler):
                         .map(t => t.trim())
                         .filter(t => t);
                     const text = document.getElementById('text').value;
+                    const apiKey = document.getElementById('apiKey').value.trim();
                     const payload = {to: to, from: 'test api web', text: text};
+                    const headers = {'Content-Type': 'application/json'};
+                    if (apiKey) {
+                        headers['X-API-KEY'] = apiKey;
+                    }
                     const resp = await fetch('/sms', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: headers,
                         body: JSON.stringify(payload)
                     });
                     if (resp.ok) {
@@ -499,6 +504,10 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <div class='mb-3'>
                     <label for='text' class='form-label'>Message</label>
                     <textarea id='text' class='form-control' rows='4' required></textarea>
+                </div>
+                <div class='mb-3'>
+                    <label for='apiKey' class='form-label'>Clé X-API-KEY</label>
+                    <input type='text' id='apiKey' class='form-control'>
                 </div>
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
