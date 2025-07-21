@@ -62,6 +62,7 @@ NAVBAR_TEMPLATE = """
           <span class='navbar-toggler-icon'></span>
         </button>
         <span class='navbar-brand ms-2'>API SMS BC</span>
+        <button id='themeToggle' class='btn btn-link text-light ms-auto' onclick='toggleTheme()'>🌙</button>
       </div>
     </nav>
     <div class='offcanvas offcanvas-start' tabindex='-1' id='menu'>
@@ -137,6 +138,9 @@ class SMSHandler(BaseHTTPRequestHandler):
         if self.path == "/updates":
             self._serve_updates()
             return
+        if self.path == "/theme.js":
+            self._serve_js()
+            return
         if self.path == "/baudin.css":
             self._serve_css()
             return
@@ -200,6 +204,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <link rel='stylesheet' href='baudin.css'>
 
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='theme.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
                 .btn-company {background-color:#0060ac;border-color:#0060ac;}
@@ -250,6 +255,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<link rel='stylesheet' href='baudin.css'>",
 
             "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+            "<script src='theme.js'></script>",
             "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
             "</head><body class='container-fluid px-3 py-4'>",
@@ -324,6 +330,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
             "<link rel='stylesheet' href='baudin.css'>",
             "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+            "<script src='theme.js'></script>",
             "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
 
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
@@ -374,6 +381,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <link rel='stylesheet' href='baudin.css'>
 
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='theme.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
                 .btn-company {background-color:#0060ac;border-color:#0060ac;}
@@ -450,6 +458,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <link rel='stylesheet' href='baudin.css'>
 
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='theme.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
                 .btn-company {background-color:#0060ac;border-color:#0060ac;}
@@ -532,6 +541,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                       "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
                       "<link rel='stylesheet' href='baudin.css'>",
                       "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+                      "<script src='theme.js'></script>",
                       "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
                       "</head><body class='container-fluid px-3 py-4'>",
                       "{NAVBAR}",
@@ -583,6 +593,19 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(css)
 
+    def _serve_js(self):
+        path = os.path.join(os.path.dirname(__file__), os.pardir, 'theme.js')
+        try:
+            with open(path, 'rb') as f:
+                js = f.read()
+        except Exception:
+            js = b''
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/javascript')
+        self.send_header('Content-Length', str(len(js)))
+        self.end_headers()
+        self.wfile.write(js)
+
     def _serve_openapi_json(self):
         try:
             with open(OPENAPI_PATH, 'rb') as f:
@@ -605,6 +628,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <link rel='stylesheet' href='baudin.css'>
             <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css'>
             <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='theme.js'></script>
             <script src='https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js'></script>
             <style>.bg-company{{background-color:#0060ac;}}</style>
         </head>
