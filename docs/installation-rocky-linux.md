@@ -7,8 +7,12 @@
 
 Install basic packages:
 ```bash
-sudo dnf install -y python3 python3-virtualenv git
+sudo dnf install -y python3 git
 ```
+
+Python 3 on Rocky Linux 9 includes the ``venv`` module used to create
+virtual environments, so no separate ``python3-virtualenv`` package is
+required.
 
 ## Clone the repository
 ```bash
