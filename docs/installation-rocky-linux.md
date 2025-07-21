@@ -16,6 +16,12 @@ sudo git clone https://github.com/greglg45/bc-api-sms.git /data/bc-api-sms
 cd /data/bc-api-sms
 ```
 
+### Automated installation
+
+An `install.sh` helper script is provided to perform these steps automatically.
+Run it as root and follow the prompts. The script now asks for the TLS certificate
+and key so the service can be served over HTTPS.
+
 ## Set up the Python environment
 ```bash
 python3 -m venv venv

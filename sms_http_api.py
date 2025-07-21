@@ -803,6 +803,16 @@ def main():
         default=os.getenv("SMS_API_KEY"),
         help="Clé API requise dans l'en-tête X-API-KEY pour POST /sms",
     )
+    parser.add_argument(
+        "--certfile",
+        type=str,
+        help="Chemin du certificat TLS (active HTTPS s'il est fourni)",
+    )
+    parser.add_argument(
+        "--keyfile",
+        type=str,
+        help="Chemin de la clé privée TLS",
+    )
 
     args = parser.parse_args()
 
@@ -816,7 +826,17 @@ def main():
         api_key=args.api_key,
     )
 
-    print(f"Serving on {args.host}:{args.port}")
+    if args.certfile and args.keyfile:
+        import ssl
+
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(certfile=args.certfile, keyfile=args.keyfile)
+        server.socket = context.wrap_socket(server.socket, server_side=True)
+        protocol = "https"
+    else:
+        protocol = "http"
+
+    print(f"Serving on {protocol}://{args.host}:{args.port}")
     server.serve_forever()
 
 

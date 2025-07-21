@@ -135,6 +135,7 @@ Quelques [exemples](examples/) se trouvent dans le dossier [/examples](examples/
 * Relayer les SMS reçus vers votre e-mail https://github.com/chenwei791129/Huawei-LTE-Router-SMS-to-E-mail-Sender
 * API HTTP SMS basique [sms_http_api.py](sms_http_api.py) (journalise les requêtes dans SQLite)
   * option `--api-key` pour protéger l'envoi de SMS via l'en-tête `X-API-KEY`
+  * options `--certfile`/`--keyfile` pour activer HTTPS
   * inclut maintenant un endpoint `/health` renvoyant les informations du modem (dérivées de `device_info.py` et `device_signal.py`)
 
 ## Mises à jour
@@ -142,4 +143,5 @@ Quelques [exemples](examples/) se trouvent dans le dossier [/examples](examples/
 Consultez [le journal des mises à jour](docs/mise-a-jour.md) pour connaître les dernières évolutions. Cette page est également accessible depuis le menu de l'interface web.
 
 Pour l'installation sur Rocky Linux, consultez [ce guide](docs/installation-rocky-linux.md).
+Un script `install.sh` est également fourni pour automatiser le déploiement ; il vous demandera notamment les chemins du certificat et de la clé privée si vous souhaitez activer HTTPS.
 
