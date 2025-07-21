@@ -712,6 +712,12 @@ class SMSHandler(BaseHTTPRequestHandler):
 
             return
 
+        if self.server.api_key is not None:
+            provided_key = self.headers.get("X-API-KEY")
+            if provided_key != self.server.api_key:
+                self._json_error(401, "Invalid API key")
+                return
+
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length)
         try:
@@ -756,7 +762,14 @@ class SMSHandler(BaseHTTPRequestHandler):
 
 class SMSHTTPServer(HTTPServer):
     def __init__(
-        self, server_address, handler_class, modem_url, username, password, db_path
+        self,
+        server_address,
+        handler_class,
+        modem_url,
+        username,
+        password,
+        db_path,
+        api_key=None,
     ):
 
         super().__init__(server_address, handler_class)
@@ -764,6 +777,7 @@ class SMSHTTPServer(HTTPServer):
         self.username = username
         self.password = password
         self.db_path = db_path
+        self.api_key = api_key
 
 
 def main():
@@ -774,6 +788,12 @@ def main():
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=80)
     parser.add_argument("--db", type=str, default=os.getenv("SMS_API_DB", "sms_api.db"))
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        default=os.getenv("SMS_API_KEY"),
+        help="Clé API requise dans l'en-tête X-API-KEY pour POST /sms",
+    )
 
     args = parser.parse_args()
 
@@ -784,6 +804,7 @@ def main():
         args.username,
         args.password,
         args.db,
+        api_key=args.api_key,
     )
 
     print(f"Serving on {args.host}:{args.port}")
