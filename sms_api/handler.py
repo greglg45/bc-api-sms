@@ -636,6 +636,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         </head>
         <body class='container-fluid px-3 py-4'>
             {self._navbar_html()}
+            <p class='mt-3'>L'en-tête <code>X-API-KEY</code> est requis pour l'opération POST <code>/sms</code>.</p>
             <div id='swagger-ui'></div>
             <script>
             window.onload = function() {{
