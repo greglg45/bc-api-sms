@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **23 juillet 2025** : correction de la page `/logs` qui retournait `404` avec
+  un slash final ou des paramètres dans l'URL.
 - **22 juillet 2025** : ajout d'un bouton pour passer du thème clair au thème sombre.
 - **21 juillet 2025** : sécurisation de l'affichage HTML des SMS dans les pages `logs` et `readsms`.
 - **21 juillet 2025** : refonte en modules (`sms_api`) et simplification de `sms_http_api.py`.
