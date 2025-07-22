@@ -116,38 +116,39 @@ class SMSHandler(BaseHTTPRequestHandler):
         self._send_json(status, {"error": message})
 
     def do_GET(self):
+        path = urllib.parse.urlparse(self.path).path
 
-        if self.path == "/":
+        if path == "/":
             self._serve_index()
             return
-        if self.path == "/openapi.json":
+        if path == "/openapi.json":
             self._serve_openapi_json()
             return
-        if self.path == "/swagger":
+        if path == "/swagger":
             self._serve_swagger()
             return
-        if self.path == "/logs":
+        if path == "/logs":
             self._serve_logs()
             return
-        if self.path == "/testsms":
+        if path == "/testsms":
             self._serve_testsms()
             return
-        if self.path == "/docs":
+        if path == "/docs":
             self._serve_docs()
             return
-        if self.path == "/updates":
+        if path == "/updates":
             self._serve_updates()
             return
-        if self.path == "/theme.js":
+        if path == "/theme.js":
             self._serve_js()
             return
-        if self.path == "/baudin.css":
+        if path == "/baudin.css":
             self._serve_css()
             return
-        if self.path.startswith("/readsms"):
+        if path.startswith("/readsms"):
             self._serve_readsms()
             return
-        if self.path != "/health":
+        if path != "/health":
             self.send_error(404, "Not found")
 
             return
@@ -249,7 +250,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         ).fetchall()
         conn.close()
 
-        html = [
+        html_lines = [
             "<html><head><meta charset='utf-8'><title>Historique SMS</title>",
             "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
             "<link rel='stylesheet' href='baudin.css'>",
@@ -269,7 +270,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<tr><th></th><th>Date/Heure</th><th>Expéditeur</th><th>Destinataire(s)</th><th>Message</th><th>Réponse</th></tr>",
         ]
         for row in rows:
-            html.append(
+            html_lines.append(
                 (
                     "<tr>"
                     "<td><input type='checkbox' class='rowchk' name='ids' value='"
@@ -282,7 +283,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     "</tr>"
                 )
             )
-        html.extend(
+        html_lines.extend(
             [
                 "</table>",
                 "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
@@ -290,7 +291,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 "</div>" + footer_html() + "</body></html>",
             ]
         )
-        body = "".join(html).encode("utf-8")
+        body = "".join(html_lines).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -325,7 +326,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             self._send_json(200, messages)
             return
 
-        html = [
+        html_lines = [
             "<html><head><meta charset='utf-8'><title>SMS reçus</title>",
             "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
             "<link rel='stylesheet' href='baudin.css'>",
@@ -346,7 +347,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<tr><th></th><th>Date/Heure</th><th>Expéditeur</th><th>Message</th></tr>",
         ]
         for m in messages:
-            html.append(
+            html_lines.append(
                 (
                     "<tr>"
                     "<td><input type='checkbox' class='rowchk' name='ids' value='"
@@ -357,14 +358,14 @@ class SMSHandler(BaseHTTPRequestHandler):
                     "</tr>"
                 )
             )
-        html.extend([
+        html_lines.extend([
             "</table>",
             "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
             "</form>",
             "</div>" + footer_html() + "</body></html>",
         ])
 
-        body = "".join(html).encode("utf-8")
+        body = "".join(html_lines).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -701,13 +702,14 @@ class SMSHandler(BaseHTTPRequestHandler):
 
 
     def do_POST(self):
-        if self.path == "/logs/delete":
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/logs/delete":
             self._delete_logs()
             return
-        if self.path == "/readsms/delete":
+        if path == "/readsms/delete":
             self._delete_sms()
             return
-        if self.path != "/sms":
+        if path != "/sms":
 
             self._json_error(404, "Not found")
 
