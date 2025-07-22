@@ -483,6 +483,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                             <td><code>/sms</code></td>
                             <td>
                                 <pre>{"to": ["+33612345678"], "from": "expediteur", "text": "message"}</pre>
+                                <small>En-tête <code>X-API-KEY</code> requis</small>
                             </td>
                             <td>200 OK avec <code>OK</code> ou JSON <code>{"error": str}</code></td>
                         </tr>
