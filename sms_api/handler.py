@@ -116,38 +116,39 @@ class SMSHandler(BaseHTTPRequestHandler):
         self._send_json(status, {"error": message})
 
     def do_GET(self):
+        path = urllib.parse.urlparse(self.path).path
 
-        if self.path == "/":
+        if path == "/":
             self._serve_index()
             return
-        if self.path == "/openapi.json":
+        if path == "/openapi.json":
             self._serve_openapi_json()
             return
-        if self.path == "/swagger":
+        if path == "/swagger":
             self._serve_swagger()
             return
-        if self.path == "/logs":
+        if path == "/logs":
             self._serve_logs()
             return
-        if self.path == "/testsms":
+        if path == "/testsms":
             self._serve_testsms()
             return
-        if self.path == "/docs":
+        if path == "/docs":
             self._serve_docs()
             return
-        if self.path == "/updates":
+        if path == "/updates":
             self._serve_updates()
             return
-        if self.path == "/theme.js":
+        if path == "/theme.js":
             self._serve_js()
             return
-        if self.path == "/baudin.css":
+        if path == "/baudin.css":
             self._serve_css()
             return
-        if self.path.startswith("/readsms"):
+        if path.startswith("/readsms"):
             self._serve_readsms()
             return
-        if self.path != "/health":
+        if path != "/health":
             self.send_error(404, "Not found")
 
             return
@@ -701,13 +702,14 @@ class SMSHandler(BaseHTTPRequestHandler):
 
 
     def do_POST(self):
-        if self.path == "/logs/delete":
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/logs/delete":
             self._delete_logs()
             return
-        if self.path == "/readsms/delete":
+        if path == "/readsms/delete":
             self._delete_sms()
             return
-        if self.path != "/sms":
+        if path != "/sms":
 
             self._json_error(404, "Not found")
 
