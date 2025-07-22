@@ -73,7 +73,12 @@
           "500": {
             "description": "Failed to send SMS"
           }
-        }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
       }
     },
     "/health": {
@@ -209,6 +214,15 @@
             "description": "Redirect to /logs"
           }
         }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
       }
     }
   }

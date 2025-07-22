@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **25 juillet 2025** : ajout du schéma de sécurité `X-API-KEY` dans `openapi.json` et association à l'opération POST `/sms`.
 - **24 juillet 2025** : correction d'une régression provoquant une erreur sur la page `/logs`.
 - **23 juillet 2025** : correction de la page `/logs` qui retournait `404` avec
   un slash final ou des paramètres dans l'URL.
