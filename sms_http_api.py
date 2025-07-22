@@ -14,6 +14,7 @@ Chaque requête est également enregistrée dans une base SQLite. Le chemin de c
 Par défaut, ``sms_api.db`` est utilisé.
 """
 
+import json
 import os
 from argparse import ArgumentParser
 
@@ -45,24 +46,48 @@ def main():
         type=str,
         help="Chemin de la clé privée TLS",
     )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config.json",
+        help="Fichier de configuration modifiable via l'interface d'administration",
+    )
 
     args = parser.parse_args()
+
+    config = {}
+    if os.path.exists(args.config):
+        try:
+            with open(args.config, encoding="utf-8") as f:
+                config = json.load(f)
+        except Exception:
+            config = {}
+
+    url = config.get("modem_url", args.url)
+    username = config.get("username", args.username)
+    password = config.get("password", args.password)
+    api_key = config.get("api_key", args.api_key)
+    certfile = config.get("certfile", args.certfile)
+    keyfile = config.get("keyfile", args.keyfile)
 
     server = SMSHTTPServer(
         (args.host, args.port),
         SMSHandler,
-        args.url,
-        args.username,
-        args.password,
+        url,
+        username,
+        password,
         args.db,
-        api_key=args.api_key,
+        api_key=api_key,
+        certfile=certfile,
+        keyfile=keyfile,
+        config_path=args.config,
     )
 
-    if args.certfile and args.keyfile:
+    if certfile and keyfile:
         import ssl
 
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        context.load_cert_chain(certfile=args.certfile, keyfile=args.keyfile)
+        context.load_cert_chain(certfile=certfile, keyfile=keyfile)
         server.socket = context.wrap_socket(server.socket, server_side=True)
         protocol = "https"
     else:

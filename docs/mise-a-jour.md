@@ -4,6 +4,8 @@ Cette page recense les évolutions majeures de l'application. Elle doit être mi
 
 ## Historique
 
+- **28 juillet 2025** : ajout d'une interface d'administration pour modifier la configuration, redémarrer le service et suivre les logs en direct.
+
 - **27 juillet 2025** : ajout d'un message dans Swagger UI précisant l'en-tête `X-API-KEY` requis pour POST `/sms`.
 - **26 juillet 2025** : la page Swagger indique désormais l'en-tête `X-API-KEY` requis pour l'opération POST `/sms`.
 - **25 juillet 2025** : ajout du schéma de sécurité `X-API-KEY` dans `openapi.json` et association à l'opération POST `/sms`.

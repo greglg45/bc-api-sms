@@ -11,6 +11,9 @@ class SMSHTTPServer(HTTPServer):
         password,
         db_path,
         api_key=None,
+        certfile=None,
+        keyfile=None,
+        config_path="config.json",
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -18,5 +21,16 @@ class SMSHTTPServer(HTTPServer):
         self.password = password
         self.db_path = db_path
         self.api_key = api_key
+        self.certfile = certfile
+        self.keyfile = keyfile
+        self.config_path = config_path
+
+    def restart(self):
+        """Redémarre le processus."""
+        import os
+        import sys
+
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
 
 __all__ = ["SMSHTTPServer"]

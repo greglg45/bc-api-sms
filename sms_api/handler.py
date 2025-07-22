@@ -4,6 +4,7 @@ import sqlite3
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
 import html
+import threading
 
 from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
@@ -77,12 +78,12 @@ NAVBAR_TEMPLATE = """
           <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS {SMS_BADGE}</a></li>
           <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/docs'>Documentation</a></li>
+          <li class='nav-item'><a class='nav-link' href='/admin'>Administration</a></li>
           <li class='nav-item'><a class='nav-link' href='/updates'>Mises à jour</a></li>
         </ul>
       </div>
     </div>
 """
-
 
 
 class SMSHandler(BaseHTTPRequestHandler):
@@ -129,6 +130,15 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/logs":
             self._serve_logs()
+            return
+        if path == "/admin":
+            self._serve_admin()
+            return
+        if path == "/admin/logs":
+            self._serve_live_logs()
+            return
+        if path.startswith("/tail"):
+            self._serve_tail()
             return
         if path == "/testsms":
             self._serve_testsms()
@@ -286,7 +296,10 @@ class SMSHandler(BaseHTTPRequestHandler):
         html_lines.extend(
             [
                 "</table>",
-                "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
+                (
+                    "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>"
+                    "Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>"
+                ),
                 "</form>",
                 "</div>" + footer_html() + "</body></html>",
             ]
@@ -360,7 +373,10 @@ class SMSHandler(BaseHTTPRequestHandler):
             )
         html_lines.extend([
             "</table>",
-            "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>",
+            (
+                "<p><button type='button' class='btn btn-secondary me-2' onclick='selectAll()'>"
+                "Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>"
+            ),
             "</form>",
             "</div>" + footer_html() + "</body></html>",
         ])
@@ -448,6 +464,174 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _serve_admin(self):
+        try:
+            with open(self.server.config_path, encoding="utf-8") as f:
+                cfg = json.load(f)
+        except Exception:
+            cfg = {}
+        html_page = f"""
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>Administration</title>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <link rel='stylesheet' href='baudin.css'>
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='theme.js'></script>
+            <style>.bg-company{{background-color:#0060ac;}}</style>
+        </head>
+        <body class='container-fluid px-3 py-4'>
+            {self._navbar_html()}
+            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+                <h1 class='display-6 text-company mb-0'>Administration</h1>
+            </div>
+            <div class='container'>
+            <form method='post' action='/admin/save'>
+                <div class='mb-3'>
+                    <label for='modem_url' class='form-label'>URL du modem</label>
+                    <input type='text' name='modem_url' id='modem_url' class='form-control' value='{html.escape(cfg.get("modem_url", self.server.modem_url))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='username' class='form-label'>Utilisateur</label>
+                    <input type='text' name='username' id='username' class='form-control' value='{html.escape(cfg.get("username", self.server.username or ""))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='password' class='form-label'>Mot de passe</label>
+                    <input type='password' name='password' id='password' class='form-control' value='{html.escape(cfg.get("password", self.server.password or ""))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='api_key' class='form-label'>Clé API</label>
+                    <input type='text' name='api_key' id='api_key' class='form-control' value='{html.escape(cfg.get("api_key", self.server.api_key or ""))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='certfile' class='form-label'>Certificat TLS</label>
+                    <input type='text' name='certfile' id='certfile' class='form-control' value='{html.escape(cfg.get("certfile", self.server.certfile or ""))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='keyfile' class='form-label'>Clé privée TLS</label>
+                    <input type='text' name='keyfile' id='keyfile' class='form-control' value='{html.escape(cfg.get("keyfile", self.server.keyfile or ""))}'>
+                </div>
+                <button type='submit' class='btn btn-company me-2'>Enregistrer</button>
+                <button type='button' class='btn btn-secondary me-2' onclick="location.href='/admin/logs'">Logs en direct</button>
+                <button type='button' class='btn btn-danger' onclick="fetch('/admin/restart', {{method:'POST'}}).then(()=>alert('Redémarrage...'))">Redémarrer</button>
+            </form>
+            </div>
+            {footer_html()}
+        </body>
+        </html>
+        """
+        body = html_page.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _save_admin(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8')
+        params = urllib.parse.parse_qs(body)
+        cfg = {
+            'modem_url': params.get('modem_url', [''])[0],
+            'username': params.get('username', [''])[0],
+            'password': params.get('password', [''])[0],
+            'api_key': params.get('api_key', [''])[0],
+            'certfile': params.get('certfile', [''])[0],
+            'keyfile': params.get('keyfile', [''])[0],
+        }
+        try:
+            with open(self.server.config_path, 'w', encoding='utf-8') as f:
+                json.dump(cfg, f, indent=2)
+        except Exception:
+            pass
+        self.server.modem_url = cfg['modem_url']
+        self.server.username = cfg['username']
+        self.server.password = cfg['password']
+        self.server.api_key = cfg['api_key'] or None
+        self.server.certfile = cfg['certfile'] or None
+        self.server.keyfile = cfg['keyfile'] or None
+        self.send_response(303)
+        self.send_header('Location', '/admin')
+        self.end_headers()
+
+    def _restart_service(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Redemarrage...')
+        threading.Thread(target=self.server.restart, daemon=True).start()
+
+    def _serve_live_logs(self):
+        html_page = """
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>Logs en direct</title>
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+            <link rel='stylesheet' href='baudin.css'>
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+            <script src='theme.js'></script>
+            <style>.bg-company{{background-color:#0060ac;}}</style>
+            <script>
+                let last = 0;
+                async function load(){
+                    const r = await fetch('/tail?last_id=' + last);
+                    const data = await r.json();
+                    last = data.last_id;
+                    const pre = document.getElementById('log');
+                    for (const row of data.logs){
+                        pre.textContent += row.timestamp + ' ' + row.sender + ' -> ' + row.phone + ' : ' + row.message + '\n';
+                    }
+                    pre.scrollTop = pre.scrollHeight;
+                }
+                setInterval(load,2000);
+                window.onload = load;
+            </script>
+        </head>
+        <body class='container-fluid px-3 py-4'>
+            {self._navbar_html()}
+            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+                <h1 class='display-6 text-company mb-0'>Logs en direct</h1>
+            </div>
+            <div class='container'>
+                <pre id='log' class='bg-light p-3 rounded' style='height:400px;overflow:auto'></pre>
+            </div>
+            {footer_html()}
+        </body>
+        </html>
+        """
+        body = html_page.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_tail(self):
+        parsed = urllib.parse.urlparse(self.path)
+        query = urllib.parse.parse_qs(parsed.query)
+        last_id = int(query.get('last_id', ['0'])[0])
+        conn = sqlite3.connect(self.server.db_path)
+        conn.row_factory = sqlite3.Row
+        ensure_logs_table(conn)
+        rows = conn.execute(
+            'SELECT * FROM logs WHERE id > ? ORDER BY id ASC', (last_id,)
+        ).fetchall()
+        conn.close()
+        data = [
+            {
+                'id': r['id'],
+                'timestamp': r['timestamp'],
+                'phone': r['phone'],
+                'sender': r['sender'],
+                'message': r['message'],
+            }
+            for r in rows
+        ]
+        if data:
+            last_id = data[-1]['id']
+        self._send_json(200, {'logs': data, 'last_id': last_id})
 
     def _serve_docs(self):
         html = """
@@ -702,7 +886,6 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.send_header("Location", "/readsms")
         self.end_headers()
 
-
     def do_POST(self):
         path = urllib.parse.urlparse(self.path).path
         if path == "/logs/delete":
@@ -710,6 +893,12 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/readsms/delete":
             self._delete_sms()
+            return
+        if path == "/admin/save":
+            self._save_admin()
+            return
+        if path == "/admin/restart":
+            self._restart_service()
             return
         if path != "/sms":
 
@@ -763,5 +952,3 @@ class SMSHandler(BaseHTTPRequestHandler):
             log_request(self.server.db_path, recipients, sender, text, str(exc))
 
             self._json_error(500, str(exc))
-
-
