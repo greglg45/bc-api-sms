@@ -8,8 +8,8 @@ Cette page recense les évolutions majeures de l'application. Elle doit être mi
 - **26 juillet 2025** : la page Swagger indique désormais l'en-tête `X-API-KEY` requis pour l'opération POST `/sms`.
 - **25 juillet 2025** : ajout du schéma de sécurité `X-API-KEY` dans `openapi.json` et association à l'opération POST `/sms`.
 - **24 juillet 2025** : correction d'une régression provoquant une erreur sur la page `/logs`.
-- **23 juillet 2025** : correction de la page `/logs` qui retournait `404` avec
-  un slash final ou des paramètres dans l'URL.
+- **23 juillet 2025** : correction de la page `/logs` qui retournait `404` avec un slash final ou des paramètres dans l'URL.
+- **22 juillet 2025** : ajout d'un tableau de bord sur la page principale affichant le nombre de SMS envoyés et rȩus ainsi que le dernier expéditeur.
 - **22 juillet 2025** : ajout d'un bouton pour passer du thème clair au thème sombre.
 - **21 juillet 2025** : sécurisation de l'affichage HTML des SMS dans les pages `logs` et `readsms`.
 - **21 juillet 2025** : refonte en modules (`sms_api`) et simplification de `sms_http_api.py`.

@@ -99,6 +99,36 @@ class SMSHandler(BaseHTTPRequestHandler):
         except Exception:
             return 0
 
+    def _get_sent_count(self) -> int:
+        conn = sqlite3.connect(self.server.db_path)
+        ensure_logs_table(conn)
+        count = conn.execute("SELECT COUNT(*) FROM logs").fetchone()[0]
+        conn.close()
+        return int(count)
+
+    def _get_last_sender(self) -> str:
+        try:
+            with Connection(
+                self.server.modem_url,
+                username=self.server.username,
+                password=self.server.password,
+            ) as connection:
+                client = Client(connection)
+                messages = list(client.sms.get_messages())
+                if messages:
+                    return messages[0]["Phone"]
+        except Exception:
+            pass
+        return ""
+
+    def _serve_dashboard(self):
+        data = {
+            "sent_total": self._get_sent_count(),
+            "received_total": self._get_sms_count(),
+            "last_sender": self._get_last_sender(),
+        }
+        self._send_json(200, data)
+
     def _navbar_html(self) -> str:
         count = self._get_sms_count()
         badge = f"<span class='badge bg-secondary ms-1'>{count}</span>"
@@ -144,6 +174,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/baudin.css":
             self._serve_css()
+            return
+        if path == "/dashboard":
+            self._serve_dashboard()
             return
         if path.startswith("/readsms"):
             self._serve_readsms()
@@ -212,17 +245,37 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .text-company {color:#0060ac;}
             </style>
             <script>
-                async function loadHealth() {
-                    const r = await fetch('/health');
-                    const data = await r.json();
-                    document.getElementById('health').textContent = JSON.stringify(data, null, 2);
+                async function loadData() {
+                    const [healthResp, dashResp] = await Promise.all([
+                        fetch('/health'),
+                        fetch('/dashboard')
+                    ]);
+                    const health = await healthResp.json();
+                    const dashboard = await dashResp.json();
+                    document.getElementById('health').textContent = JSON.stringify(health, null, 2);
+                    document.getElementById('sentCount').textContent = dashboard.sent_total;
+                    document.getElementById('receivedCount').textContent = dashboard.received_total;
+                    document.getElementById('lastSender').textContent = dashboard.last_sender || 'N/A';
                 }
-                window.onload = loadHealth;
+                window.onload = loadData;
             </script>
         </head>
         <body class='container-fluid px-3 py-4'>
 
             {NAVBAR}
+            <div class='container mb-4'>
+                <div class='row text-center'>
+                    <div class='col'>
+                        <div class='p-3 bg-light rounded'>SMS envoyés : <span id='sentCount'>-</span></div>
+                    </div>
+                    <div class='col'>
+                        <div class='p-3 bg-light rounded'>SMS reçus : <span id='receivedCount'>-</span></div>
+                    </div>
+                    <div class='col'>
+                        <div class='p-3 bg-light rounded'>Dernier expéditeur : <span id='lastSender'>-</span></div>
+                    </div>
+                </div>
+            </div>
             <div class='p-5 mb-4 bg-light rounded-3 text-center'>
                 <h1 class='display-6 text-company mb-0'>Informations du modem</h1>
             </div>
