@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+
 - **26 juillet 2025** : la page Swagger indique désormais l'en-tête `X-API-KEY` requis pour l'opération POST `/sms`.
 - **25 juillet 2025** : ajout du schéma de sécurité `X-API-KEY` dans `openapi.json` et association à l'opération POST `/sms`.
 - **24 juillet 2025** : correction d'une régression provoquant une erreur sur la page `/logs`.
