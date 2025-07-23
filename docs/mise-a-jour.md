@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **31 juillet 2025** : le script `install.sh` conserve désormais les paramètres
+  saisis lors d'une précédente installation.
 - **30 juillet 2025** : suppression de la fonctionnalité de logs en direct.
 
 - **29 juillet 2025** : la pastille du menu se met à jour via l'endpoint `/sms_count` avec un délai configurable pour la connexion au modem.

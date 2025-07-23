@@ -37,6 +37,7 @@ prompt_password_var() {
 REPO_URL="https://github.com/greglg45/bc-api-sms.git"
 INSTALL_DIR="/data/bc-api-sms"
 VERSION_FILE="$INSTALL_DIR/VERSION"
+CONFIG_FILE=""
 
 # Parameters used for the HTTP API service
 ROUTER_URL="http://192.168.8.1/"
@@ -150,6 +151,11 @@ EOF
 main() {
     prompt_var INSTALL_DIR "Installation directory" "$INSTALL_DIR"
     VERSION_FILE="$INSTALL_DIR/VERSION"
+    CONFIG_FILE="$INSTALL_DIR/install.conf"
+    if [ -f "$CONFIG_FILE" ]; then
+        # shellcheck disable=SC1090
+        source "$CONFIG_FILE"
+    fi
     prompt_var ROUTER_URL "Router URL" "$ROUTER_URL"
     prompt_var ROUTER_USERNAME "Router username" "$ROUTER_USERNAME"
     prompt_password_var ROUTER_PASSWORD "Router password" "$ROUTER_PASSWORD"
@@ -166,7 +172,8 @@ main() {
     setup_venv
     configure_selinux
 
-    local repo_version=$(get_repo_version)
+    local repo_version
+    repo_version=$(get_repo_version)
     local current_version=""
     if [ -f "$VERSION_FILE" ]; then
         current_version=$(cat "$VERSION_FILE")
@@ -182,6 +189,18 @@ main() {
 
     # Write and enable the systemd service on every run
     setup_service
+
+    cat <<EOF | sudo tee "$CONFIG_FILE" >/dev/null
+ROUTER_URL="$ROUTER_URL"
+ROUTER_USERNAME="$ROUTER_USERNAME"
+ROUTER_PASSWORD="$ROUTER_PASSWORD"
+HOST="$HOST"
+PORT="$PORT"
+API_KEY="$API_KEY"
+CERTFILE="$CERTFILE"
+KEYFILE="$KEYFILE"
+EOF
+    sudo chmod 600 "$CONFIG_FILE"
 }
 
 main "$@"
