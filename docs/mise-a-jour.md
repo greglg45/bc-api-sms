@@ -3,23 +3,22 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **23 juillet 2025** : install.sh n'affiche plus les questions si un fichier de configuration existe
+
 - **23 juillet 2025** : ajout du script `scripts/ajout_mise_a_jour.py` pour insérer automatiquement les entrées du journal.
 - **23 juillet 2025** : correction d'un bug affichant toujours "N/A" pour le dernier expéditeur sur la page principale.
 - **24 juillet 2025** : utilisation du paramètre `timeout` lors de la récupération du dernier expéditeur afin de corriger l'affichage.
-- **24 juillet 2025** : récupération du dernier expéditeur depuis la base SQLite afin d'éviter l'affichage constant de "N/A".
-
-- **1 août 2025** : ajout sur la page principale d'une case affichant les informations réseau (opérateur, type et barres de signal).
-- **31 juillet 2025** : le script `install.sh` conserve désormais les paramètres
+- **23 juillet 2025** : récupération du dernier expéditeur depuis la base SQLite afin d'éviter l'affichage constant de "N/A".
+- **23 juillet 2025** : ajout sur la page principale d'une case affichant les informations réseau (opérateur, type et barres de signal).
+- **23 juillet 2025** : le script `install.sh` conserve désormais les paramètres
   saisis lors d'une précédente installation.
-- **30 juillet 2025** : suppression de la fonctionnalité de logs en direct.
-
-- **29 juillet 2025** : la pastille du menu se met à jour via l'endpoint `/sms_count` avec un délai configurable pour la connexion au modem.
-- **28 juillet 2025** : ajout d'une interface d'administration pour modifier la configuration, redémarrer le service et suivre les logs en direct.
-
-- **27 juillet 2025** : ajout d'un message dans Swagger UI précisant l'en-tête `X-API-KEY` requis pour POST `/sms`.
-- **26 juillet 2025** : la page Swagger indique désormais l'en-tête `X-API-KEY` requis pour l'opération POST `/sms`.
-- **25 juillet 2025** : ajout du schéma de sécurité `X-API-KEY` dans `openapi.json` et association à l'opération POST `/sms`.
-- **24 juillet 2025** : correction d'une régression provoquant une erreur sur la page `/logs`.
+- **23 juillet 2025** : suppression de la fonctionnalité de logs en direct.
+- **23 juillet 2025** : la pastille du menu se met à jour via l'endpoint `/sms_count` avec un délai configurable pour la connexion au modem.
+- **23 juillet 2025** : ajout d'une interface d'administration pour modifier la configuration, redémarrer le service et suivre les logs en direct.
+- **23 juillet 2025** : ajout d'un message dans Swagger UI précisant l'en-tête `X-API-KEY` requis pour POST `/sms`.
+- **23 juillet 2025** : la page Swagger indique désormais l'en-tête `X-API-KEY` requis pour l'opération POST `/sms`.
+- **23 juillet 2025** : ajout du schéma de sécurité `X-API-KEY` dans `openapi.json` et association à l'opération POST `/sms`.
+- **23 juillet 2025** : correction d'une régression provoquant une erreur sur la page `/logs`.
 - **23 juillet 2025** : correction de la page `/logs` qui retournait `404` avec un slash final ou des paramètres dans l'URL.
 - **23 juillet 2025** : correction du mécanisme de redémarrage du service.
 - **22 juillet 2025** : ajout d'un tableau de bord sur la page principale affichant le nombre de SMS envoyés et rȩus ainsi que le dernier expéditeur.

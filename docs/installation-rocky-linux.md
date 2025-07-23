@@ -28,6 +28,10 @@ and key so the service can be served over HTTPS. It will also clone the
 repository if needed and recreate the target directory should it not already
 contain a valid Git checkout.
 
+On note également qu'une fois l'installation terminée, les paramètres saisis sont
+enregistrés dans un fichier `install.conf`. Lors d'une exécution ultérieure du
+script, ces valeurs seront réutilisées sans poser de nouvelles questions.
+
 ## Set up the Python environment
 ```bash
 python3 -m venv venv
