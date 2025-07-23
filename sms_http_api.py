@@ -52,6 +52,12 @@ def main():
         default="config.json",
         help="Fichier de configuration modifiable via l'interface d'administration",
     )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=5,
+        help="Délai en secondes pour la connexion au modem",
+    )
 
     args = parser.parse_args()
 
@@ -69,6 +75,7 @@ def main():
     api_key = config.get("api_key", args.api_key)
     certfile = config.get("certfile", args.certfile)
     keyfile = config.get("keyfile", args.keyfile)
+    timeout = int(config.get("timeout", args.timeout))
 
     server = SMSHTTPServer(
         (args.host, args.port),
@@ -81,6 +88,7 @@ def main():
         certfile=certfile,
         keyfile=keyfile,
         config_path=args.config,
+        timeout=timeout,
     )
 
     if certfile and keyfile:

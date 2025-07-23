@@ -4,6 +4,7 @@ Cette page recense les évolutions majeures de l'application. Elle doit être mi
 
 ## Historique
 
+- **29 juillet 2025** : la pastille du menu se met à jour via l'endpoint `/sms_count` avec un délai configurable pour la connexion au modem.
 - **28 juillet 2025** : ajout d'une interface d'administration pour modifier la configuration, redémarrer le service et suivre les logs en direct.
 
 - **27 juillet 2025** : ajout d'un message dans Swagger UI précisant l'en-tête `X-API-KEY` requis pour POST `/sms`.
