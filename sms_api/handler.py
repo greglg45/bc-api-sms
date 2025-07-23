@@ -118,7 +118,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 client = Client(connection)
                 messages = list(client.sms.get_messages())
                 if messages:
-                    return messages[0]["Phone"]
+                    return messages[0].phone
         except Exception:
             pass
         return ""
