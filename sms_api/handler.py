@@ -275,6 +275,8 @@ class SMSHandler(BaseHTTPRequestHandler):
                     document.getElementById('sentCount').textContent = dashboard.sent_total;
                     document.getElementById('receivedCount').textContent = dashboard.received_total;
                     document.getElementById('lastSender').textContent = dashboard.last_sender || 'N/A';
+                    const networkInfo = `${health.operator_name.toUpperCase()} ${health.network_type} ${health.signal_bars}`;
+                    document.getElementById('networkInfo').textContent = networkInfo;
                 }
                 window.onload = loadData;
             </script>
@@ -292,6 +294,9 @@ class SMSHandler(BaseHTTPRequestHandler):
                     </div>
                     <div class='col'>
                         <div class='p-3 bg-light rounded'>Dernier expéditeur : <span id='lastSender'>-</span></div>
+                    </div>
+                    <div class='col'>
+                        <div class='p-3 bg-light rounded'>Réseau : <span id='networkInfo'>-</span></div>
                     </div>
                 </div>
             </div>
