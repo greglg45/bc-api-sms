@@ -115,7 +115,6 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
 
     from kafka import KafkaProducer, KafkaConsumer
     from kafka.errors import NoBrokersAvailable
-    import json
     import time
 
     common = {
@@ -142,24 +141,29 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
 
     try:
         producer = KafkaProducer(
-            **common, value_serializer=lambda v: json.dumps(v).encode("utf-8")
+            **common, value_serializer=lambda v: v.encode("utf-8")
         )
         consumer = KafkaConsumer(
-            cfg.get("kafka_group_id", "sms-consumer"),
+            "matrix.person.phone-number.reply",
+            group_id=cfg.get("kafka_group_id", "sms-consumer"),
             **common,
-            value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+            value_deserializer=lambda v: v.decode("utf-8"),
             auto_offset_reset="latest",
         )
     except NoBrokersAvailable:
         return ""
 
-    producer.send("baudinsms-request", key=baudin_id.encode(), value={})
+    producer.send(
+        "matrix.person.phone-number",
+        key=None,
+        value=baudin_id.upper(),
+    )
     producer.flush()
 
     end = time.time() + 10
     for message in consumer:
-        if message.key and message.key.decode() == baudin_id:
-            phone = message.value.get("phone", "")
+        if message.value:
+            phone = message.value
             producer.close()
             consumer.close()
             return phone
