@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **23 juillet 2025** : Mise en place d'un correlation ID pour la recherche de numéro via Kafka
 - **23 juillet 2025** : Ajout d'un timeout lors de la consommation Kafka pour éviter le blocage
 
 
