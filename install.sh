@@ -152,18 +152,22 @@ main() {
     prompt_var INSTALL_DIR "Installation directory" "$INSTALL_DIR"
     VERSION_FILE="$INSTALL_DIR/VERSION"
     CONFIG_FILE="$INSTALL_DIR/install.conf"
+    local config_exists="false"
     if [ -f "$CONFIG_FILE" ]; then
         # shellcheck disable=SC1090
         source "$CONFIG_FILE"
+        config_exists="true"
     fi
-    prompt_var ROUTER_URL "Router URL" "$ROUTER_URL"
-    prompt_var ROUTER_USERNAME "Router username" "$ROUTER_USERNAME"
-    prompt_password_var ROUTER_PASSWORD "Router password" "$ROUTER_PASSWORD"
-    prompt_var HOST "HTTP API host" "$HOST"
-    prompt_var PORT "HTTP API port" "$PORT"
-    prompt_var API_KEY "API key (blank to disable)" "$API_KEY"
-    prompt_var CERTFILE "TLS certificate file (blank to disable HTTPS)" "$CERTFILE"
-    prompt_var KEYFILE "TLS private key file" "$KEYFILE"
+    if [ "$config_exists" != "true" ]; then
+        prompt_var ROUTER_URL "Router URL" "$ROUTER_URL"
+        prompt_var ROUTER_USERNAME "Router username" "$ROUTER_USERNAME"
+        prompt_password_var ROUTER_PASSWORD "Router password" "$ROUTER_PASSWORD"
+        prompt_var HOST "HTTP API host" "$HOST"
+        prompt_var PORT "HTTP API port" "$PORT"
+        prompt_var API_KEY "API key (blank to disable)" "$API_KEY"
+        prompt_var CERTFILE "TLS certificate file (blank to disable HTTPS)" "$CERTFILE"
+        prompt_var KEYFILE "TLS private key file" "$KEYFILE"
+    fi
 
     install_deps
     stop_service
