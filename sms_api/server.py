@@ -19,6 +19,14 @@ class SMSHTTPServer(HTTPServer):
         keyfile=None,
         config_path="config.json",
         timeout=5,
+        kafka_client_id="sms",
+        kafka_url="",
+        kafka_group_id="sms-consumer",
+        kafka_username="",
+        kafka_password="",
+        kafka_ca_cert="",
+        kafka_privkey="",
+        kafka_cert="",
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -30,6 +38,14 @@ class SMSHTTPServer(HTTPServer):
         self.keyfile = keyfile
         self.config_path = config_path
         self.timeout = timeout
+        self.kafka_client_id = kafka_client_id
+        self.kafka_url = kafka_url
+        self.kafka_group_id = kafka_group_id
+        self.kafka_username = kafka_username
+        self.kafka_password = kafka_password
+        self.kafka_ca_cert = kafka_ca_cert
+        self.kafka_privkey = kafka_privkey
+        self.kafka_cert = kafka_cert
 
     def restart(self):
         """Redémarre le service ou le processus."""

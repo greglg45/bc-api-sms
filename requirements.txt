@@ -2,3 +2,4 @@ requests
 xmltodict
 pycryptodomex
 typing;python_version<"3.5"
+kafka-python
