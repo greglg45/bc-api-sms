@@ -77,7 +77,7 @@ NAVBAR_TEMPLATE = """
           <li class='nav-item'><a class='nav-link' href='/'>Accueil</a></li>
           <li class='nav-item'><a class='nav-link' href='/logs'>Historique SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS {SMS_BADGE}</a></li>
-          <li class='nav-item'><a class='nav-link' href='/testsms'>Envoyer un SMS</a></li>
+          <li class='nav-item'><a class='nav-link' href='/sendsms'>Envoyer un SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/docs'>Documentation</a></li>
           <li class='nav-item'><a class='nav-link' href='/admin'>Administration</a></li>
           <li class='nav-item'><a class='nav-link' href='/updates'>Mises à jour</a></li>
@@ -197,8 +197,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         if path == "/admin":
             self._serve_admin()
             return
-        if path == "/testsms":
-            self._serve_testsms()
+        if path == "/sendsms":
+            self._serve_sendsms()
             return
         if path == "/docs":
             self._serve_docs()
@@ -486,7 +486,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _serve_testsms(self):
+    def _serve_sendsms(self):
         html = """
         <html>
         <head>
@@ -503,22 +503,41 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .text-company {color:#0060ac;}
             </style>
             <script>
+                async function searchBaudin() {
+                    const id = document.getElementById('baudinId').value.trim();
+                    if (!id) return;
+                    try {
+                        const r = await fetch('/phone?id=' + encodeURIComponent(id));
+                        let phone = 'Introuvable';
+                        if (r.ok) {
+                            const j = await r.json();
+                            phone = j.phone || 'Introuvable';
+                        }
+                        document.getElementById('foundPhone').textContent = phone;
+                        document.getElementById('baudinResult').style.display = 'block';
+                    } catch(e) {
+                        document.getElementById('foundPhone').textContent = 'Erreur';
+                        document.getElementById('baudinResult').style.display = 'block';
+                    }
+                }
+
+                function addPhone() {
+                    const phone = document.getElementById('foundPhone').textContent.trim();
+                    if (!phone || phone === 'Introuvable' || phone === 'Erreur') return;
+                    const to = document.getElementById('to');
+                    if (to.value.trim()) {
+                        to.value = to.value.trim() + ',' + phone;
+                    } else {
+                        to.value = phone;
+                    }
+                }
+
                 async function sendSms(event) {
                     event.preventDefault();
-                    let to = document.getElementById('to').value
+                    const to = document.getElementById('to').value
                         .split(',')
                         .map(t => t.trim())
                         .filter(t => t);
-                    const baudinId = document.getElementById('baudinId').value.trim();
-                    if (to.length === 0 && baudinId) {
-                        try {
-                            const r = await fetch('/phone?id=' + encodeURIComponent(baudinId));
-                            if (r.ok) {
-                                const j = await r.json();
-                                if (j.phone) { to = [j.phone]; }
-                            }
-                        } catch(e) {}
-                    }
                     const text = document.getElementById('text').value;
                     const apiKey = document.getElementById('apiKey').value.trim();
                     const payload = {to: to, from: 'test api web', text: text};
@@ -553,7 +572,14 @@ class SMSHandler(BaseHTTPRequestHandler):
                 </div>
                 <div class='mb-3'>
                     <label for='baudinId' class='form-label'>Identifiant Baudin</label>
-                    <input type='text' id='baudinId' class='form-control'>
+                    <div class='input-group'>
+                        <input type='text' id='baudinId' class='form-control'>
+                        <button type='button' class='btn btn-secondary' onclick='searchBaudin()'>Rechercher</button>
+                    </div>
+                </div>
+                <div id='baudinResult' class='mb-3' style='display:none;'>
+                    <span id='foundPhone'></span>
+                    <button type='button' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
                 </div>
                 <div class='mb-3'>
                     <label for='text' class='form-label'>Message</label>
