@@ -109,18 +109,15 @@ class SMSHandler(BaseHTTPRequestHandler):
         return int(count)
 
     def _get_last_sender(self) -> str:
-        try:
-            with Connection(
-                self.server.modem_url,
-                username=self.server.username,
-                password=self.server.password,
-            ) as connection:
-                client = Client(connection)
-                messages = list(client.sms.get_messages())
-                if messages:
-                    return messages[0]["Phone"]
-        except Exception:
-            pass
+        conn = sqlite3.connect(self.server.db_path)
+        conn.row_factory = sqlite3.Row
+        ensure_logs_table(conn)
+        row = conn.execute(
+            "SELECT sender FROM logs WHERE sender IS NOT NULL AND sender != '' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        conn.close()
+        if row:
+            return row["sender"]
         return ""
 
     def _serve_dashboard(self):
@@ -210,6 +207,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 device_info = client.device.information()
@@ -387,6 +385,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 messages = [m.to_dict() for m in client.sms.get_messages()]
@@ -871,6 +870,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 for sms_id in ids:
@@ -933,6 +933,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 resp = client.sms.send_sms(recipients, text)
