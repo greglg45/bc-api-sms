@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **1 août 2025** : ajout sur la page principale d'une case affichant les informations réseau (opérateur, type et barres de signal).
 - **31 juillet 2025** : le script `install.sh` conserve désormais les paramètres
   saisis lors d'une précédente installation.
 - **30 juillet 2025** : suppression de la fonctionnalité de logs en direct.
