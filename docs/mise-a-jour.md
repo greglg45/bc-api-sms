@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **25 juillet 2025** : La recherche par identifiant Baudin est déplacée dans une section repliable sur la page `/sendsms`.
 - **23 juillet 2025** : Mise en place d'un correlation ID pour la recherche de numéro via Kafka
 - **23 juillet 2025** : Ajout d'un timeout lors de la consommation Kafka pour éviter le blocage
 

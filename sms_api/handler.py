@@ -571,23 +571,30 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <input type='text' id='to' class='form-control' required>
                 </div>
                 <div class='mb-3'>
-                    <label for='baudinId' class='form-label'>Identifiant Baudin</label>
-                    <div class='input-group'>
-                        <input type='text' id='baudinId' class='form-control'>
-                        <button type='button' class='btn btn-secondary' onclick='searchBaudin()'>Rechercher</button>
-                    </div>
-                </div>
-                <div id='baudinResult' class='mb-3' style='display:none;'>
-                    <span id='foundPhone'></span>
-                    <button type='button' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
-                </div>
-                <div class='mb-3'>
                     <label for='text' class='form-label'>Message</label>
                     <textarea id='text' class='form-control' rows='4' required></textarea>
                 </div>
                 <div class='mb-3'>
                     <label for='apiKey' class='form-label'>Clé X-API-KEY</label>
                     <input type='text' id='apiKey' class='form-control'>
+                </div>
+                <button class='btn btn-link p-0 mb-3' type='button' data-bs-toggle='collapse' data-bs-target='#baudinSearch' aria-expanded='false' aria-controls='baudinSearch'>
+                    Recherche avancée via Kafka
+                </button>
+                <div class='collapse mb-3' id='baudinSearch'>
+                    <div class='card card-body'>
+                        <div class='mb-3'>
+                            <label for='baudinId' class='form-label'>Identifiant Baudin</label>
+                            <div class='input-group'>
+                                <input type='text' id='baudinId' class='form-control'>
+                                <button type='button' class='btn btn-secondary' onclick='searchBaudin()'>Rechercher</button>
+                            </div>
+                        </div>
+                        <div id='baudinResult' class='mb-3' style='display:none;'>
+                            <span id='foundPhone'></span>
+                            <button type='button' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
+                        </div>
+                    </div>
                 </div>
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
