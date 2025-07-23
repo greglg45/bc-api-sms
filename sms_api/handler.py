@@ -438,7 +438,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     f"{m['Index']}'></td>"
                     f"<td>{html.escape(m['Date'])}</td>"
                     f"<td>{html.escape(m['Phone'])}</td>"
-                    f"<td>{html.escape(m['Content'])}</td>"
+                    f"<td>{html.escape(m.get('Content') or '')}</td>"
                     "</tr>"
                 )
             )

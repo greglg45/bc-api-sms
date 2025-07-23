@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **23 juillet 2025** : Correction d'un crash sur /readsms quand le contenu du SMS est vide
+
 - **25 juillet 2025** : correction de l'endpoint `/readsms` qui accepte
   désormais le paramètre `json` avec n'importe quelle valeur.
 
