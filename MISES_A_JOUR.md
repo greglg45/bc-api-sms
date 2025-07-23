@@ -3,3 +3,4 @@
 - Modification des topics Kafka pour la recherche de numéro et mise à jour de la fonction get_phone_from_kafka.
 - Ajout de traces de log pour les requêtes Kafka.
 
+- Ajout d'un timeout sur la consommation Kafka pour éviter le blocage lors de la recherche de numéro.

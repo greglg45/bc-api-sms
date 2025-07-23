@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **23 juillet 2025** : Ajout d'un timeout lors de la consommation Kafka pour éviter le blocage
+
 
 - **24 juillet 2025** : Changement de l'URL `/testsms` vers `/sendsms` et ajout d'un bouton de recherche Kafka pour renseigner le destinataire
 - **23 juillet 2025** : Gestion de l'erreur "NoBrokersAvailable" lors de la recherche Kafka
