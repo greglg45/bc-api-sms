@@ -141,6 +141,13 @@ Quelques [exemples](examples/) se trouvent dans le dossier [/examples](examples/
 ## Mises à jour
 
 Consultez [le journal des mises à jour](docs/mise-a-jour.md) pour connaître les dernières évolutions. Cette page est également accessible depuis le menu de l'interface web.
+Pour ajouter une entrée, utilisez le script `scripts/ajout_mise_a_jour.py` :
+
+```bash
+python scripts/ajout_mise_a_jour.py "Votre message"
+```
+
+La ligne datée du jour est automatiquement ajoutée en tête de l’historique.
 
 Pour l'installation sur Rocky Linux, consultez [ce guide](docs/installation-rocky-linux.md).
 Un script `install.sh` est également fourni pour automatiser le déploiement ; il vous demandera notamment les chemins du certificat et de la clé privée si vous souhaitez activer HTTPS.
