@@ -175,7 +175,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
     producer.flush()
     logger.debug("Message envoyé pour %s", baudin_id.upper())
 
-    end = time.time() + 10
+    end = time.time() + 30
     for message in consumer:
         headers = dict(message.headers or [])
         msg_id = headers.get("correlation_id")

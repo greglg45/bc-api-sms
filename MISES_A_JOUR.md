@@ -5,3 +5,4 @@
 
 - Ajout d'un timeout sur la consommation Kafka pour éviter le blocage lors de la recherche de numéro.
 - Mise en place d'un correlation ID pour la recherche de numéro via Kafka.
+- Augmentation du délai d'attente pour la consommation Kafka.
