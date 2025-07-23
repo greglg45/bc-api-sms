@@ -5,6 +5,7 @@ Cette page recense les évolutions majeures de l'application. Elle doit être mi
 ## Historique
 
 - **24 juillet 2025** : Changement de l'URL `/testsms` vers `/sendsms` et ajout d'un bouton de recherche Kafka pour renseigner le destinataire
+- **23 juillet 2025** : Gestion de l'erreur "NoBrokersAvailable" lors de la recherche Kafka
 - **23 juillet 2025** : Correction d'un crash sur /readsms quand le contenu du SMS est vide
 - **23 juillet 2025** : Ajout du support Kafka et d'une recherche de numéro dans /sendsms
 - **23 juillet 2025** : correction de l'endpoint `/readsms` qui accepte
