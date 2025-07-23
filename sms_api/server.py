@@ -1,4 +1,8 @@
 from http.server import HTTPServer
+import os
+import sys
+import subprocess
+import shutil
 
 
 class SMSHTTPServer(HTTPServer):
@@ -28,11 +32,11 @@ class SMSHTTPServer(HTTPServer):
         self.timeout = timeout
 
     def restart(self):
-        """Redémarre le processus."""
-        import os
-        import sys
-
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+        """Redémarre le service ou le processus."""
+        if shutil.which("systemctl"):
+            subprocess.run(["systemctl", "restart", "bc-api-sms.service"])
+        else:
+            os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 __all__ = ["SMSHTTPServer"]

@@ -621,7 +621,11 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b'Redemarrage...')
-        threading.Thread(target=self.server.restart, daemon=True).start()
+        try:
+            self.wfile.flush()
+        except Exception:
+            pass
+        self.server.restart()
 
     def _serve_docs(self):
         html = """
