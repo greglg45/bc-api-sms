@@ -8,3 +8,4 @@
 - Augmentation du délai d'attente pour la consommation Kafka.
 - Ajout des traces du correlation ID dans les logs Kafka pour le debug du topic "sms reply".
 - Nouvelle disposition de la recherche via l'identifiant Baudin sur la page `/sendsms`.
+- Amélioration du bouton de recherche avancée via Kafka sur la page `/sendsms`.
