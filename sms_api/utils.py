@@ -2,6 +2,7 @@ import os
 import re
 import sqlite3
 import logging
+import uuid
 from datetime import datetime
 
 
@@ -164,17 +165,21 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
         logger.error("Aucun broker Kafka disponible")
         return ""
 
+    correlation_id = str(uuid.uuid4())
     producer.send(
         "matrix.person.phone-number",
         key=None,
         value=baudin_id.upper(),
+        headers=[("correlation_id", correlation_id.encode("utf-8"))],
     )
     producer.flush()
     logger.debug("Message envoyé pour %s", baudin_id.upper())
 
     end = time.time() + 10
     for message in consumer:
-        if message.value:
+        headers = dict(message.headers or [])
+        msg_id = headers.get("correlation_id")
+        if msg_id and msg_id.decode("utf-8") == correlation_id and message.value:
             phone = message.value
             logger.info("Réponse reçue de Kafka: %s", phone)
             producer.close()
