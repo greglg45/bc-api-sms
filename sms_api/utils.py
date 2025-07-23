@@ -156,6 +156,9 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
             **common,
             value_deserializer=lambda v: v.decode("utf-8"),
             auto_offset_reset="latest",
+            # Stop iteration after 1s if no message was received so we can
+            # exit the loop when the timeout is reached
+            consumer_timeout_ms=1000,
         )
     except NoBrokersAvailable:
         logger.error("Aucun broker Kafka disponible")
