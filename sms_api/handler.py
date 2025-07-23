@@ -285,7 +285,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <script src='theme.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
-                .btn-company {background-color:#0060ac;border-color:#0060ac;}
+                .btn-company {background-color:#0060ac;border-color:#0060ac;color:#fff;}
                 .text-company {color:#0060ac;}
             </style>
             <script>
@@ -499,7 +499,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             <script src='theme.js'></script>
             <style>
                 .bg-company {background-color:#0060ac;}
-                .btn-company {background-color:#0060ac;border-color:#0060ac;}
+                .btn-company {background-color:#0060ac;border-color:#0060ac;color:#fff;}
                 .text-company {color:#0060ac;}
             </style>
             <script>
@@ -578,8 +578,8 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <label for='apiKey' class='form-label'>Clé X-API-KEY</label>
                     <input type='text' id='apiKey' class='form-control'>
                 </div>
-                <button class='btn btn-link p-0 mb-3' type='button' data-bs-toggle='collapse' data-bs-target='#baudinSearch' aria-expanded='false' aria-controls='baudinSearch'>
-                    Recherche avancée via Kafka
+                <button class='btn btn-company mb-3 w-100' type='button' data-bs-toggle='collapse' data-bs-target='#baudinSearch' aria-expanded='false' aria-controls='baudinSearch'>
+                    🔎 Recherche avancée via Kafka
                 </button>
                 <div class='collapse mb-3' id='baudinSearch'>
                     <div class='card card-body'>
