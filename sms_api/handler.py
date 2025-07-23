@@ -17,6 +17,7 @@ from .utils import (
     log_request,
     validate_request,
     footer_html,
+    get_phone_from_kafka,
 )
 
 OPENAPI_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "openapi.json")
@@ -131,6 +132,29 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _serve_sms_count(self):
         self._send_json(200, {"count": self._get_sms_count()})
 
+    def _serve_phone(self):
+        query = urllib.parse.urlparse(self.path).query
+        params = urllib.parse.parse_qs(query)
+        baudin_id = params.get("id", [""])[0].strip()
+        if not baudin_id:
+            self._json_error(400, "id manquant")
+            return
+        cfg = {
+            "kafka_client_id": self.server.kafka_client_id,
+            "kafka_url": self.server.kafka_url,
+            "kafka_group_id": self.server.kafka_group_id,
+            "kafka_username": self.server.kafka_username,
+            "kafka_password": self.server.kafka_password,
+            "kafka_ca_cert": self.server.kafka_ca_cert,
+            "kafka_privkey": self.server.kafka_privkey,
+            "kafka_cert": self.server.kafka_cert,
+        }
+        phone = get_phone_from_kafka(baudin_id, cfg)
+        if phone:
+            self._send_json(200, {"phone": phone})
+        else:
+            self._json_error(404, "Numero introuvable")
+
     def _navbar_html(self) -> str:
         badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
         script = (
@@ -193,6 +217,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/sms_count":
             self._serve_sms_count()
+            return
+        if path == "/phone":
+            self._serve_phone()
             return
         if path.startswith("/readsms"):
             self._serve_readsms()
@@ -473,10 +500,20 @@ class SMSHandler(BaseHTTPRequestHandler):
             <script>
                 async function sendSms(event) {
                     event.preventDefault();
-                    const to = document.getElementById('to').value
+                    let to = document.getElementById('to').value
                         .split(',')
                         .map(t => t.trim())
                         .filter(t => t);
+                    const baudinId = document.getElementById('baudinId').value.trim();
+                    if (to.length === 0 && baudinId) {
+                        try {
+                            const r = await fetch('/phone?id=' + encodeURIComponent(baudinId));
+                            if (r.ok) {
+                                const j = await r.json();
+                                if (j.phone) { to = [j.phone]; }
+                            }
+                        } catch(e) {}
+                    }
                     const text = document.getElementById('text').value;
                     const apiKey = document.getElementById('apiKey').value.trim();
                     const payload = {to: to, from: 'test api web', text: text};
@@ -508,6 +545,10 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <div class='mb-3'>
                     <label for='to' class='form-label'>Destinataire(s) (séparés par des virgules)</label>
                     <input type='text' id='to' class='form-control' required>
+                </div>
+                <div class='mb-3'>
+                    <label for='baudinId' class='form-label'>Identifiant Baudin</label>
+                    <input type='text' id='baudinId' class='form-control'>
                 </div>
                 <div class='mb-3'>
                     <label for='text' class='form-label'>Message</label>
@@ -579,6 +620,38 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <label for='keyfile' class='form-label'>Clé privée TLS</label>
                     <input type='text' name='keyfile' id='keyfile' class='form-control' value='{html.escape(cfg.get("keyfile", self.server.keyfile or ""))}'>
                 </div>
+                <div class='mb-3'>
+                    <label for='kafka_client_id' class='form-label'>KAFKA_CLIENT_ID</label>
+                    <input type='text' name='kafka_client_id' id='kafka_client_id' class='form-control' value='{html.escape(cfg.get("kafka_client_id", self.server.kafka_client_id))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_url' class='form-label'>KAFKA_URL</label>
+                    <input type='text' name='kafka_url' id='kafka_url' class='form-control' value='{html.escape(cfg.get("kafka_url", self.server.kafka_url))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_group_id' class='form-label'>KAFKA_GROUP_ID</label>
+                    <input type='text' name='kafka_group_id' id='kafka_group_id' class='form-control' value='{html.escape(cfg.get("kafka_group_id", self.server.kafka_group_id))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_username' class='form-label'>KAFKA_USERNAME</label>
+                    <input type='text' name='kafka_username' id='kafka_username' class='form-control' value='{html.escape(cfg.get("kafka_username", self.server.kafka_username))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_password' class='form-label'>KAFKA_PASSWORD</label>
+                    <input type='text' name='kafka_password' id='kafka_password' class='form-control' value='{html.escape(cfg.get("kafka_password", self.server.kafka_password))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_ca_cert' class='form-label'>KAFKA_CA_CERT</label>
+                    <input type='text' name='kafka_ca_cert' id='kafka_ca_cert' class='form-control' value='{html.escape(cfg.get("kafka_ca_cert", self.server.kafka_ca_cert))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_privkey' class='form-label'>KAFKA_PRIVKEY</label>
+                    <input type='text' name='kafka_privkey' id='kafka_privkey' class='form-control' value='{html.escape(cfg.get("kafka_privkey", self.server.kafka_privkey))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='kafka_cert' class='form-label'>KAFKA_CERT</label>
+                    <input type='text' name='kafka_cert' id='kafka_cert' class='form-control' value='{html.escape(cfg.get("kafka_cert", self.server.kafka_cert))}'>
+                </div>
                 <button type='submit' class='btn btn-company me-2'>Enregistrer</button>
                 <button type='button' class='btn btn-danger' onclick="fetch('/admin/restart', {{method:'POST'}}).then(()=>alert('Redémarrage...'))">Redémarrer</button>
             </form>
@@ -605,6 +678,14 @@ class SMSHandler(BaseHTTPRequestHandler):
             'api_key': params.get('api_key', [''])[0],
             'certfile': params.get('certfile', [''])[0],
             'keyfile': params.get('keyfile', [''])[0],
+            'kafka_client_id': params.get('kafka_client_id', [''])[0],
+            'kafka_url': params.get('kafka_url', [''])[0],
+            'kafka_group_id': params.get('kafka_group_id', [''])[0],
+            'kafka_username': params.get('kafka_username', [''])[0],
+            'kafka_password': params.get('kafka_password', [''])[0],
+            'kafka_ca_cert': params.get('kafka_ca_cert', [''])[0],
+            'kafka_privkey': params.get('kafka_privkey', [''])[0],
+            'kafka_cert': params.get('kafka_cert', [''])[0],
         }
         try:
             with open(self.server.config_path, 'w', encoding='utf-8') as f:
@@ -617,6 +698,14 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.server.api_key = cfg['api_key'] or None
         self.server.certfile = cfg['certfile'] or None
         self.server.keyfile = cfg['keyfile'] or None
+        self.server.kafka_client_id = cfg['kafka_client_id'] or "sms"
+        self.server.kafka_url = cfg['kafka_url']
+        self.server.kafka_group_id = cfg['kafka_group_id'] or "sms-consumer"
+        self.server.kafka_username = cfg['kafka_username']
+        self.server.kafka_password = cfg['kafka_password']
+        self.server.kafka_ca_cert = cfg['kafka_ca_cert']
+        self.server.kafka_privkey = cfg['kafka_privkey']
+        self.server.kafka_cert = cfg['kafka_cert']
         self.send_response(303)
         self.send_header('Location', '/admin')
         self.end_headers()
