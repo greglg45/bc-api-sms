@@ -400,7 +400,12 @@ class SMSHandler(BaseHTTPRequestHandler):
 
     def _serve_readsms(self):
         parsed = urllib.parse.urlparse(self.path)
-        want_json = parsed.query == "json" or "application/json" in self.headers.get("Accept", "")
+        params = urllib.parse.parse_qs(parsed.query)
+        want_json = (
+            "json" in params
+            or parsed.query == "json"
+            or "application/json" in self.headers.get("Accept", "")
+        )
 
         try:
             with Connection(

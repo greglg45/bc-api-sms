@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **25 juillet 2025** : correction de l'endpoint `/readsms` qui accepte
+  désormais le paramètre `json` avec n'importe quelle valeur.
 - **23 juillet 2025** : ajout de la recherche de numéro via l'API Matrix sur la page /testsms
 
 - **23 juillet 2025** : install.sh n'affiche plus les questions si un fichier de configuration existe
