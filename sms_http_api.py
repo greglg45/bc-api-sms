@@ -16,6 +16,7 @@ Par défaut, ``sms_api.db`` est utilisé.
 
 import json
 import os
+import logging
 from argparse import ArgumentParser
 
 from sms_api.server import SMSHTTPServer
@@ -23,6 +24,7 @@ from sms_api.handler import SMSHandler
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     parser = ArgumentParser()
     parser.add_argument("url", type=str)
     parser.add_argument("--username", type=str)
@@ -125,7 +127,7 @@ def main():
     else:
         protocol = "http"
 
-    print(f"Serving on {protocol}://{args.host}:{args.port}")
+    logging.info("Serving on %s://%s:%s", protocol, args.host, args.port)
     server.serve_forever()
 
 

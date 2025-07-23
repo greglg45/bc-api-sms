@@ -1,6 +1,7 @@
 import os
 import re
 import sqlite3
+import logging
 from datetime import datetime
 
 
@@ -14,6 +15,9 @@ __all__ = [
     "footer_html",
     "get_phone_from_kafka",
 ]
+
+
+logger = logging.getLogger(__name__)
 
 
 def parse_dbm(value):
@@ -113,6 +117,8 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
     if not cfg.get("kafka_url"):
         return ""
 
+    logger.info("Recherche du numéro via Kafka pour l'ID %s", baudin_id)
+
     from kafka import KafkaProducer, KafkaConsumer
     from kafka.errors import NoBrokersAvailable
     import time
@@ -140,6 +146,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
         )
 
     try:
+        logger.debug("Connexion à Kafka sur %s", cfg.get("kafka_url"))
         producer = KafkaProducer(
             **common, value_serializer=lambda v: v.encode("utf-8")
         )
@@ -151,6 +158,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
             auto_offset_reset="latest",
         )
     except NoBrokersAvailable:
+        logger.error("Aucun broker Kafka disponible")
         return ""
 
     producer.send(
@@ -159,16 +167,20 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
         value=baudin_id.upper(),
     )
     producer.flush()
+    logger.debug("Message envoyé pour %s", baudin_id.upper())
 
     end = time.time() + 10
     for message in consumer:
         if message.value:
             phone = message.value
+            logger.info("Réponse reçue de Kafka: %s", phone)
             producer.close()
             consumer.close()
             return phone
         if time.time() > end:
             break
+
+    logger.warning("Kafka n'a pas retourné de numéro pour %s", baudin_id)
 
     producer.close()
     consumer.close()
