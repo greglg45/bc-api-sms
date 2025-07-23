@@ -93,6 +93,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 info = client.sms.sms_count()
@@ -130,10 +131,21 @@ class SMSHandler(BaseHTTPRequestHandler):
         }
         self._send_json(200, data)
 
+    def _serve_sms_count(self):
+        self._send_json(200, {"count": self._get_sms_count()})
+
     def _navbar_html(self) -> str:
-        count = self._get_sms_count()
-        badge = f"<span class='badge bg-secondary ms-1'>{count}</span>"
-        return NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge)
+        badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
+        script = (
+            "<script>"
+            "async function updateSmsBadge(){try{const r=await fetch('/sms_count');"
+            "const j=await r.json();"
+            "document.getElementById('smsBadge').textContent=j.count;}catch(e){" 
+            "document.getElementById('smsBadge').textContent='?';}}"
+            "updateSmsBadge();setInterval(updateSmsBadge,5000);"
+            "</script>"
+        )
+        return NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge) + script
 
     def _send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")
@@ -187,6 +199,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/dashboard":
             self._serve_dashboard()
+            return
+        if path == "/sms_count":
+            self._serve_sms_count()
             return
         if path.startswith("/readsms"):
             self._serve_readsms()

@@ -14,6 +14,7 @@ class SMSHTTPServer(HTTPServer):
         certfile=None,
         keyfile=None,
         config_path="config.json",
+        timeout=5,
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -24,6 +25,7 @@ class SMSHTTPServer(HTTPServer):
         self.certfile = certfile
         self.keyfile = keyfile
         self.config_path = config_path
+        self.timeout = timeout
 
     def restart(self):
         """Redémarre le processus."""
