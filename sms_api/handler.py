@@ -114,6 +114,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 messages = list(client.sms.get_messages())
@@ -210,6 +211,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 device_info = client.device.information()
@@ -387,6 +389,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 messages = [m.to_dict() for m in client.sms.get_messages()]
@@ -871,6 +874,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 for sms_id in ids:
@@ -933,6 +937,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.server.modem_url,
                 username=self.server.username,
                 password=self.server.password,
+                timeout=self.server.timeout,
             ) as connection:
                 client = Client(connection)
                 resp = client.sms.send_sms(recipients, text)

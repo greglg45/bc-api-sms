@@ -7,6 +7,8 @@ Cette page recense les évolutions majeures de l'application. Elle doit être mi
 
 - **23 juillet 2025** : ajout du script `scripts/ajout_mise_a_jour.py` pour insérer automatiquement les entrées du journal.
 - **23 juillet 2025** : correction d'un bug affichant toujours "N/A" pour le dernier expéditeur sur la page principale.
+- **23 juillet 2025** : utilisation du paramètre `timeout` lors de la récupération du dernier expéditeur afin de corriger l'affichage.
+
 
 - **1 août 2025** : ajout sur la page principale d'une case affichant les informations réseau (opérateur, type et barres de signal).
 - **31 juillet 2025** : le script `install.sh` conserve désormais les paramètres
