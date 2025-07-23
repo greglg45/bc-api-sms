@@ -3,11 +3,11 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+
+- **23 juillet 2025** : Ajout du support Kafka et d'une recherche de numéro dans /testsms
 - **25 juillet 2025** : correction de l'endpoint `/readsms` qui accepte
   désormais le paramètre `json` avec n'importe quelle valeur.
-
 - **23 juillet 2025** : install.sh n'affiche plus les questions si un fichier de configuration existe
-
 - **23 juillet 2025** : ajout du script `scripts/ajout_mise_a_jour.py` pour insérer automatiquement les entrées du journal.
 - **23 juillet 2025** : correction d'un bug affichant toujours "N/A" pour le dernier expéditeur sur la page principale.
 - **24 juillet 2025** : utilisation du paramètre `timeout` lors de la récupération du dernier expéditeur afin de corriger l'affichage.

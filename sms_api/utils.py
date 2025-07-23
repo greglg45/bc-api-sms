@@ -12,6 +12,7 @@ __all__ = [
     "validate_request",
     "get_last_update_date",
     "footer_html",
+    "get_phone_from_kafka",
 ]
 
 
@@ -105,3 +106,60 @@ def footer_html() -> str:
         f"Dernière mise à jour : {date} - &copy; DSI Baudinchateauneuf"
         "</footer>"
     )
+
+
+def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
+    """Interroge Kafka pour obtenir le numéro associé à un identifiant."""
+    if not cfg.get("kafka_url"):
+        return ""
+
+    from kafka import KafkaProducer, KafkaConsumer
+    import json
+    import time
+
+    common = {
+        "bootstrap_servers": cfg["kafka_url"].split(","),
+        "client_id": cfg.get("kafka_client_id", "sms"),
+    }
+    if cfg.get("kafka_username") and cfg.get("kafka_password"):
+        common.update(
+            {
+                "sasl_mechanism": "SCRAM-SHA-512",
+                "security_protocol": "SASL_SSL",
+                "sasl_plain_username": cfg["kafka_username"],
+                "sasl_plain_password": cfg["kafka_password"],
+            }
+        )
+    if cfg.get("kafka_ca_cert") and cfg.get("kafka_privkey") and cfg.get("kafka_cert"):
+        common.update(
+            {
+                "ssl_cafile": cfg["kafka_ca_cert"],
+                "ssl_keyfile": cfg["kafka_privkey"],
+                "ssl_certfile": cfg["kafka_cert"],
+            }
+        )
+
+    producer = KafkaProducer(**common, value_serializer=lambda v: json.dumps(v).encode("utf-8"))
+    consumer = KafkaConsumer(
+        cfg.get("kafka_group_id", "sms-consumer"),
+        **common,
+        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+        auto_offset_reset="latest",
+    )
+
+    producer.send("baudinsms-request", key=baudin_id.encode(), value={})
+    producer.flush()
+
+    end = time.time() + 10
+    for message in consumer:
+        if message.key and message.key.decode() == baudin_id:
+            phone = message.value.get("phone", "")
+            producer.close()
+            consumer.close()
+            return phone
+        if time.time() > end:
+            break
+
+    producer.close()
+    consumer.close()
+    return ""
