@@ -3,6 +3,7 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **30 juillet 2025** : suppression de la fonctionnalité de logs en direct.
 
 - **29 juillet 2025** : la pastille du menu se met à jour via l'endpoint `/sms_count` avec un délai configurable pour la connexion au modem.
 - **28 juillet 2025** : ajout d'une interface d'administration pour modifier la configuration, redémarrer le service et suivre les logs en direct.
