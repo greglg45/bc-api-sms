@@ -5,6 +5,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler
 import html
 import threading
+import requests
 
 from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
@@ -131,6 +132,24 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _serve_sms_count(self):
         self._send_json(200, {"count": self._get_sms_count()})
 
+    def _serve_phone_lookup(self):
+        parsed = urllib.parse.urlparse(self.path)
+        initials = urllib.parse.parse_qs(parsed.query).get("initials", [""])[0].strip()
+        if not initials:
+            self._json_error(400, "initials required")
+            return
+        if not self.server.matrix_url or not self.server.matrix_token:
+            self._json_error(503, "service not configured")
+            return
+        try:
+            url = f"{self.server.matrix_url.rstrip('/')}/matrix/persons/{initials}/phone-numbers"
+            resp = requests.get(url, headers={"Authorization": f"Bearer {self.server.matrix_token}"}, timeout=5)
+            resp.raise_for_status()
+            data = resp.json()
+            self._send_json(200, data)
+        except Exception as exc:
+            self._json_error(500, str(exc))
+
     def _navbar_html(self) -> str:
         badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
         script = (
@@ -193,6 +212,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/sms_count":
             self._serve_sms_count()
+            return
+        if path == "/phone_lookup":
+            self._serve_phone_lookup()
             return
         if path.startswith("/readsms"):
             self._serve_readsms()
@@ -471,12 +493,34 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .text-company {color:#0060ac;}
             </style>
             <script>
+                async function lookupPhone() {
+                    const init = document.getElementById('initials').value.trim();
+                    if(!init) return;
+                    const resp = await fetch('/phone_lookup?initials=' + encodeURIComponent(init));
+                    if(resp.ok){
+                        const data = await resp.json();
+                        if(data.length>0){
+                            document.getElementById('to').value = data[0].phoneNumber;
+                        } else {
+                            alert('Aucun numéro trouvé');
+                        }
+                    } else {
+                        alert('Erreur lors de la recherche');
+                    }
+                }
                 async function sendSms(event) {
                     event.preventDefault();
-                    const to = document.getElementById('to').value
+                    let to = document.getElementById('to').value
                         .split(',')
                         .map(t => t.trim())
                         .filter(t => t);
+                    if(to.length === 0){
+                        await lookupPhone();
+                        to = document.getElementById('to').value
+                            .split(',')
+                            .map(t => t.trim())
+                            .filter(t => t);
+                    }
                     const text = document.getElementById('text').value;
                     const apiKey = document.getElementById('apiKey').value.trim();
                     const payload = {to: to, from: 'test api web', text: text};
@@ -506,8 +550,15 @@ class SMSHandler(BaseHTTPRequestHandler):
             <div class='container'>
             <form id='smsForm' onsubmit='sendSms(event)' class='mb-3'>
                 <div class='mb-3'>
+                    <label for='initials' class='form-label'>Trigramme utilisateur</label>
+                    <div class='input-group'>
+                        <input type='text' id='initials' class='form-control' placeholder='ABC'>
+                        <button type='button' class='btn btn-secondary' onclick='lookupPhone()'>Rechercher</button>
+                    </div>
+                </div>
+                <div class='mb-3'>
                     <label for='to' class='form-label'>Destinataire(s) (séparés par des virgules)</label>
-                    <input type='text' id='to' class='form-control' required>
+                    <input type='text' id='to' class='form-control'>
                 </div>
                 <div class='mb-3'>
                     <label for='text' class='form-label'>Message</label>
@@ -572,6 +623,14 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <input type='text' name='api_key' id='api_key' class='form-control' value='{html.escape(cfg.get("api_key", self.server.api_key or ""))}'>
                 </div>
                 <div class='mb-3'>
+                    <label for='matrix_url' class='form-label'>URL API Matrix</label>
+                    <input type='text' name='matrix_url' id='matrix_url' class='form-control' value='{html.escape(cfg.get("matrix_url", self.server.matrix_url or ""))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='matrix_token' class='form-label'>Token API Matrix</label>
+                    <input type='text' name='matrix_token' id='matrix_token' class='form-control' value='{html.escape(cfg.get("matrix_token", self.server.matrix_token or ""))}'>
+                </div>
+                <div class='mb-3'>
                     <label for='certfile' class='form-label'>Certificat TLS</label>
                     <input type='text' name='certfile' id='certfile' class='form-control' value='{html.escape(cfg.get("certfile", self.server.certfile or ""))}'>
                 </div>
@@ -603,6 +662,8 @@ class SMSHandler(BaseHTTPRequestHandler):
             'username': params.get('username', [''])[0],
             'password': params.get('password', [''])[0],
             'api_key': params.get('api_key', [''])[0],
+            'matrix_url': params.get('matrix_url', [''])[0],
+            'matrix_token': params.get('matrix_token', [''])[0],
             'certfile': params.get('certfile', [''])[0],
             'keyfile': params.get('keyfile', [''])[0],
         }
@@ -615,6 +676,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.server.username = cfg['username']
         self.server.password = cfg['password']
         self.server.api_key = cfg['api_key'] or None
+        self.server.matrix_url = cfg['matrix_url'] or None
+        self.server.matrix_token = cfg['matrix_token'] or None
         self.server.certfile = cfg['certfile'] or None
         self.server.keyfile = cfg['keyfile'] or None
         self.send_response(303)
