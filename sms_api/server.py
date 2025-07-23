@@ -19,8 +19,6 @@ class SMSHTTPServer(HTTPServer):
         keyfile=None,
         config_path="config.json",
         timeout=5,
-        matrix_url=None,
-        matrix_token=None,
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -32,8 +30,6 @@ class SMSHTTPServer(HTTPServer):
         self.keyfile = keyfile
         self.config_path = config_path
         self.timeout = timeout
-        self.matrix_url = matrix_url
-        self.matrix_token = matrix_token
 
     def restart(self):
         """Redémarre le service ou le processus."""
