@@ -173,15 +173,31 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
         headers=[("correlation_id", correlation_id.encode("utf-8"))],
     )
     producer.flush()
-    logger.debug("Message envoyé pour %s", baudin_id.upper())
+    logger.debug(
+        "Message envoyé pour %s avec correlation_id %s",
+        baudin_id.upper(),
+        correlation_id,
+    )
 
     end = time.time() + 30
     for message in consumer:
         headers = dict(message.headers or [])
         msg_id = headers.get("correlation_id")
-        if msg_id and msg_id.decode("utf-8") == correlation_id and message.value:
+        if msg_id:
+            received_cid = msg_id.decode("utf-8")
+            logger.debug("Message reçu avec correlation_id %s", received_cid)
+        else:
+            received_cid = None
+        if (
+            received_cid == correlation_id
+            and message.value
+        ):
             phone = message.value
-            logger.info("Réponse reçue de Kafka: %s", phone)
+            logger.info(
+                "Réponse reçue de Kafka: %s (correlation_id %s)",
+                phone,
+                correlation_id,
+            )
             producer.close()
             consumer.close()
             return phone
