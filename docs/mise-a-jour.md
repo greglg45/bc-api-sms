@@ -4,8 +4,9 @@ Cette page recense les évolutions majeures de l'application. Elle doit être mi
 
 ## Historique
 
+- **23 juillet 2025** : Correction d'un crash sur /readsms quand le contenu du SMS est vide
 - **23 juillet 2025** : Ajout du support Kafka et d'une recherche de numéro dans /testsms
-- **25 juillet 2025** : correction de l'endpoint `/readsms` qui accepte
+- **23 juillet 2025** : correction de l'endpoint `/readsms` qui accepte
   désormais le paramètre `json` avec n'importe quelle valeur.
 - **23 juillet 2025** : install.sh n'affiche plus les questions si un fichier de configuration existe
 - **23 juillet 2025** : ajout du script `scripts/ajout_mise_a_jour.py` pour insérer automatiquement les entrées du journal.
