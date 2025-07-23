@@ -176,12 +176,6 @@ class SMSHandler(BaseHTTPRequestHandler):
         if path == "/admin":
             self._serve_admin()
             return
-        if path == "/admin/logs":
-            self._serve_live_logs()
-            return
-        if path.startswith("/tail"):
-            self._serve_tail()
-            return
         if path == "/testsms":
             self._serve_testsms()
             return
@@ -582,7 +576,6 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <input type='text' name='keyfile' id='keyfile' class='form-control' value='{html.escape(cfg.get("keyfile", self.server.keyfile or ""))}'>
                 </div>
                 <button type='submit' class='btn btn-company me-2'>Enregistrer</button>
-                <button type='button' class='btn btn-secondary me-2' onclick="location.href='/admin/logs'">Logs en direct</button>
                 <button type='button' class='btn btn-danger' onclick="fetch('/admin/restart', {{method:'POST'}}).then(()=>alert('Redémarrage...'))">Redémarrer</button>
             </form>
             </div>
@@ -629,77 +622,6 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b'Redemarrage...')
         threading.Thread(target=self.server.restart, daemon=True).start()
-
-    def _serve_live_logs(self):
-        html_page = """
-        <html>
-        <head>
-            <meta charset='utf-8'>
-            <title>Logs en direct</title>
-            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
-            <link rel='stylesheet' href='baudin.css'>
-            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
-            <script src='theme.js'></script>
-            <style>.bg-company{{background-color:#0060ac;}}</style>
-            <script>
-                let last = 0;
-                async function load(){
-                    const r = await fetch('/tail?last_id=' + last);
-                    const data = await r.json();
-                    last = data.last_id;
-                    const pre = document.getElementById('log');
-                    for (const row of data.logs){
-                        pre.textContent += row.timestamp + ' ' + row.sender + ' -> ' + row.phone + ' : ' + row.message + '\n';
-                    }
-                    pre.scrollTop = pre.scrollHeight;
-                }
-                setInterval(load,2000);
-                window.onload = load;
-            </script>
-        </head>
-        <body class='container-fluid px-3 py-4'>
-            {self._navbar_html()}
-            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
-                <h1 class='display-6 text-company mb-0'>Logs en direct</h1>
-            </div>
-            <div class='container'>
-                <pre id='log' class='bg-light p-3 rounded' style='height:400px;overflow:auto'></pre>
-            </div>
-            {footer_html()}
-        </body>
-        </html>
-        """
-        body = html_page.encode('utf-8')
-        self.send_response(200)
-        self.send_header('Content-Type', 'text/html; charset=utf-8')
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def _serve_tail(self):
-        parsed = urllib.parse.urlparse(self.path)
-        query = urllib.parse.parse_qs(parsed.query)
-        last_id = int(query.get('last_id', ['0'])[0])
-        conn = sqlite3.connect(self.server.db_path)
-        conn.row_factory = sqlite3.Row
-        ensure_logs_table(conn)
-        rows = conn.execute(
-            'SELECT * FROM logs WHERE id > ? ORDER BY id ASC', (last_id,)
-        ).fetchall()
-        conn.close()
-        data = [
-            {
-                'id': r['id'],
-                'timestamp': r['timestamp'],
-                'phone': r['phone'],
-                'sender': r['sender'],
-                'message': r['message'],
-            }
-            for r in rows
-        ]
-        if data:
-            last_id = data[-1]['id']
-        self._send_json(200, {'logs': data, 'last_id': last_id})
 
     def _serve_docs(self):
         html = """
