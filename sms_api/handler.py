@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+import subprocess
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
 import html
@@ -684,6 +685,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <input type='text' name='kafka_cert' id='kafka_cert' class='form-control' value='{html.escape(cfg.get("kafka_cert", self.server.kafka_cert))}'>
                 </div>
                 <button type='submit' class='btn btn-company me-2'>Enregistrer</button>
+                <button type='button' class='btn btn-secondary me-2' onclick="fetch('/admin/install', {method:'POST'}).then(()=>alert('Installation...'))">Installer</button>
                 <button type='button' class='btn btn-danger' onclick="fetch('/admin/restart', {{method:'POST'}}).then(()=>alert('Redémarrage...'))">Redémarrer</button>
             </form>
             </div>
@@ -747,6 +749,21 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.wfile.write(b'Redemarrage...')
         try:
             self.wfile.flush()
+        except Exception:
+            pass
+        self.server.restart()
+
+    def _install_and_restart(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Installation...')
+        try:
+            self.wfile.flush()
+        except Exception:
+            pass
+        script = os.path.join(os.path.dirname(__file__), os.pardir, 'install.sh')
+        try:
+            subprocess.run(['bash', script], check=True)
         except Exception:
             pass
         self.server.restart()
@@ -1018,6 +1035,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/admin/restart":
             self._restart_service()
+            return
+        if path == "/admin/install":
+            self._install_and_restart()
             return
         if path != "/sms":
 
