@@ -58,16 +58,6 @@ def main():
         default=5,
         help="Délai en secondes pour la connexion au modem",
     )
-    parser.add_argument(
-        "--matrix-url",
-        type=str,
-        help="URL de l'API Matrix pour récupérer les numéros",
-    )
-    parser.add_argument(
-        "--matrix-token",
-        type=str,
-        help="Jeton Bearer pour l'API Matrix",
-    )
 
     args = parser.parse_args()
 
@@ -86,8 +76,6 @@ def main():
     certfile = config.get("certfile", args.certfile)
     keyfile = config.get("keyfile", args.keyfile)
     timeout = int(config.get("timeout", args.timeout))
-    matrix_url = config.get("matrix_url", args.matrix_url)
-    matrix_token = config.get("matrix_token", args.matrix_token)
 
     server = SMSHTTPServer(
         (args.host, args.port),
@@ -101,8 +89,6 @@ def main():
         keyfile=keyfile,
         config_path=args.config,
         timeout=timeout,
-        matrix_url=matrix_url,
-        matrix_token=matrix_token,
     )
 
     if certfile and keyfile:
