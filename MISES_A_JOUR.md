@@ -29,3 +29,5 @@
 - Correction de la pré-initialisation Kafka : plusieurs `poll` sont réalisés jusqu'à l'assignation des partitions.
 - Le bouton "Ajouter" de la recherche avancée via Kafka disparaît après avoir ajouté le numéro dans /sendsms.
 - Nouvelle tentative de warmup Kafka avant chaque recherche de numéro.
+- Attente de l'assignation Kafka avant l'envoi.
+- Envoi du message même si aucune partition n'est assignée après le warmup Kafka.
