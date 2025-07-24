@@ -265,7 +265,10 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict, *, producer=None, consumer=N
         thread.join()
         if not consumer.assignment():
             logger.warning("Aucune partition assignée après le warmup Kafka")
-
+            if close_clients:
+                producer.close()
+                consumer.close()
+            return ""
 
     correlation_id = str(uuid.uuid4())
     producer.send(
