@@ -531,9 +531,16 @@ class SMSHandler(BaseHTTPRequestHandler):
                         }
                         document.getElementById('foundPhone').textContent = phone;
                         document.getElementById('baudinResult').style.display = 'block';
+                        const btn = document.getElementById('addPhoneBtn');
+                        if (phone && phone !== 'Introuvable' && phone !== 'Erreur') {
+                            btn.style.display = 'inline-block';
+                        } else {
+                            btn.style.display = 'none';
+                        }
                     } catch(e) {
                         document.getElementById('foundPhone').textContent = 'Erreur';
                         document.getElementById('baudinResult').style.display = 'block';
+                        document.getElementById('addPhoneBtn').style.display = 'none';
                     }
                 }
 
@@ -546,6 +553,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     } else {
                         to.value = phone;
                     }
+                    document.getElementById('addPhoneBtn').style.display = 'none';
                 }
 
                 async function sendSms(event) {
@@ -610,7 +618,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                                 </div>
                                 <div id='baudinResult' class='mb-3' style='display:none;'>
                                     <span id='foundPhone'></span>
-                                    <button type='button' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
+                                    <button type='button' id='addPhoneBtn' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
                                 </div>
                             </div>
                         </div>

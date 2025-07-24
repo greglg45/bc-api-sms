@@ -27,3 +27,4 @@
 
 - Pré-initialisation de la connexion Kafka en arrière-plan pour accélérer la première requête.
 - Correction de la pré-initialisation Kafka : plusieurs `poll` sont réalisés jusqu'à l'assignation des partitions.
+- Le bouton "Ajouter" de la recherche avancée via Kafka disparaît après avoir ajouté le numéro dans /sendsms.
