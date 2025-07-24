@@ -206,6 +206,10 @@ def create_kafka_clients(cfg: dict):
             consumer_timeout_ms=1000,
         )
         _start_consumer_heartbeat(consumer)
+        try:
+            consumer.poll(0)
+        except Exception as exc:  # pragma: no cover - log seulement
+            logger.debug("Premiere poll Kafka en erreur: %s", exc)
 
         original_close = consumer.close
 

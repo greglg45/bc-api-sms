@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **24 juillet 2025** : Connexion Kafka join forcée au démarrage pour éviter la perte du premier message
+
 - **24 juillet 2025** : Ajout de traces de log pour le déclenchement de la mise à jour
 
 - **24 juillet 2025** : Utilisation des en-tetes kafka_correlationId, kafka_replyTopic et kafka_replyPartition

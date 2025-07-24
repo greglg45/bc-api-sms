@@ -23,5 +23,6 @@
 - Ajout de traces de log pour le déclenchement de la mise à jour.
 - Définition de `delivery_timeout_ms` sur le producteur Kafka pour éviter l'erreur "delivery_timeout_ms higher than linger_ms + request_timeout_ms" lors du démarrage.
 - Augmentation de `connections_max_idle_ms` à 2 000 000 ms pour que la valeur soit supérieure à `request_timeout_ms`.
+- Forçage de l'adhésion au groupe Kafka lors de la création du consommateur afin de ne plus perdre le premier message.
 
 
