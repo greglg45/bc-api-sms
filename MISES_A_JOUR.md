@@ -25,3 +25,4 @@
 - Correctif : lancement du heartbeat Kafka uniquement après un premier `poll(0)` du consommateur.
 - Définition de `connections_max_idle_ms` pour éviter l'erreur de configuration au démarrage.
 
+- Pré-initialisation de la connexion Kafka en arrière-plan pour accélérer la première requête.
