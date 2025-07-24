@@ -189,11 +189,15 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
         "matrix.person.phone-number",
         key=None,
         value=baudin_id.upper(),
-        headers=[("correlation_id", correlation_id.encode("utf-8"))],
+        headers=[
+            ("kafka_correlationId", correlation_id.encode("utf-8")),
+            ("kafka_replyTopic", b"matrix.person.phone-number.reply"),
+            ("kafka_replyPartition", b"0"),
+        ],
     )
     producer.flush()
     logger.debug(
-        "Message envoyé pour %s avec correlation_id %s",
+        "Message envoyé pour %s avec kafka_correlationId %s",
         baudin_id.upper(),
         correlation_id,
     )
@@ -201,10 +205,10 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
     end = time.time() + 30
     for message in consumer:
         headers = dict(message.headers or [])
-        msg_id = headers.get("correlation_id")
+        msg_id = headers.get("kafka_correlationId")
         if msg_id:
             received_cid = msg_id.decode("utf-8")
-            logger.debug("Message reçu avec correlation_id %s", received_cid)
+            logger.debug("Message reçu avec kafka_correlationId %s", received_cid)
         else:
             received_cid = None
         if (
@@ -213,7 +217,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
         ):
             phone = message.value
             logger.info(
-                "Réponse reçue de Kafka: %s (correlation_id %s)",
+                "Réponse reçue de Kafka: %s (kafka_correlationId %s)",
                 phone,
                 correlation_id,
             )

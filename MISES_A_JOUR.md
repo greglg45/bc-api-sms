@@ -9,3 +9,4 @@
 - Ajout des traces du correlation ID dans les logs Kafka pour le debug du topic "sms reply".
 - Nouvelle disposition de la recherche via l'identifiant Baudin sur la page `/sendsms`.
 - Amélioration du bouton de recherche avancée via Kafka sur la page `/sendsms`.
+- Ajout des en-tetes kafka_correlationId, kafka_replyTopic et kafka_replyPartition
