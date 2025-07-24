@@ -261,7 +261,9 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict, *, producer=None, consumer=N
             return ""
 
     if not consumer.assignment():
-        thread = warmup_kafka(consumer, timeout_ms=1000, max_attempts=60)
+
+        thread = warmup_kafka(consumer, timeout_ms=1000, max_attempts=10)
+
         thread.join()
         if not consumer.assignment():
             logger.warning("Aucune partition assignée après le warmup Kafka")
