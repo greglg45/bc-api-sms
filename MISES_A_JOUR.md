@@ -13,3 +13,5 @@
 - Correction du délai d'attente lors de la recherche du numéro via Kafka.
 - Ajout de traces détaillées pour debugger la récupération du numéro via Kafka.
 
+
+- Correction de la désérialisation des messages Kafka quand la valeur est nulle.
