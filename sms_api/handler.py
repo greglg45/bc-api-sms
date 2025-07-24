@@ -5,6 +5,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler
 import html
 import threading
+import subprocess
 
 from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
@@ -64,7 +65,8 @@ NAVBAR_TEMPLATE = """
           <span class='navbar-toggler-icon'></span>
         </button>
         <span class='navbar-brand ms-2'>API SMS BC</span>
-        <button id='themeToggle' class='btn btn-link text-light ms-auto' onclick='toggleTheme()'>🌙</button>
+        <button id='updateBtn' class='btn btn-link text-warning ms-auto me-2 d-none' onclick='promptUpdate()'>Mise à jour disponible</button>
+        <button id='themeToggle' class='btn btn-link text-light' onclick='toggleTheme()'>🌙</button>
       </div>
     </nav>
     <div class='offcanvas offcanvas-start' tabindex='-1' id='menu'>
@@ -161,9 +163,12 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<script>"
             "async function updateSmsBadge(){try{const r=await fetch('/sms_count');"
             "const j=await r.json();"
-            "document.getElementById('smsBadge').textContent=j.count;}catch(e){" 
+            "document.getElementById('smsBadge').textContent=j.count;}catch(e){"
             "document.getElementById('smsBadge').textContent='?';}}"
-            "updateSmsBadge();setInterval(updateSmsBadge,5000);"
+            "async function checkUpdate(){try{const r=await fetch('/check_update');"
+            "const j=await r.json();if(j.update_available){document.getElementById('updateBtn').classList.remove('d-none');}}catch(e){}}"
+            "function promptUpdate(){if(confirm('Lancer la mise à jour ?')){fetch('/update',{method:'POST'}).then(()=>alert('Mise à jour lancée'));}}"
+            "updateSmsBadge();setInterval(updateSmsBadge,5000);checkUpdate();"
             "</script>"
         )
         return NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge) + script
@@ -205,6 +210,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/updates":
             self._serve_updates()
+            return
+        if path == "/check_update":
+            self._check_update()
             return
         if path == "/theme.js":
             self._serve_js()
@@ -758,6 +766,38 @@ class SMSHandler(BaseHTTPRequestHandler):
             pass
         self.server.restart()
 
+    def _check_update(self):
+        repo_dir = os.path.join(os.path.dirname(__file__), os.pardir)
+        try:
+            branch = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=repo_dir
+                )
+                .decode()
+                .strip()
+            )
+            subprocess.run(["git", "fetch"], cwd=repo_dir, check=False)
+            ahead = int(
+                subprocess.check_output(
+                    ["git", "rev-list", "--count", f"HEAD..origin/{branch}"],
+                    cwd=repo_dir,
+                )
+                .decode()
+                .strip()
+            )
+            available = ahead > 0
+        except Exception:
+            available = False
+        self._send_json(200, {"update_available": available})
+
+    def _run_update(self):
+        script = os.path.join(os.path.dirname(__file__), os.pardir, "install.sh")
+        try:
+            subprocess.Popen(["bash", script])
+            self._send_json(200, {"status": "started"})
+        except Exception as exc:
+            self._json_error(500, str(exc))
+
     def _serve_docs(self):
         html = """
         <html>
@@ -1025,6 +1065,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/admin/restart":
             self._restart_service()
+            return
+        if path == "/update":
+            self._run_update()
             return
         if path != "/sms":
 

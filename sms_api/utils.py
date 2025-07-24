@@ -13,6 +13,7 @@ __all__ = [
     "log_request",
     "validate_request",
     "get_last_update_date",
+    "get_current_version",
     "footer_html",
     "get_phone_from_kafka",
 ]
@@ -104,11 +105,29 @@ def get_last_update_date() -> str:
     return datetime.utcnow().strftime("%d/%m/%Y")
 
 
+def get_current_version() -> str:
+    """Récupère la version actuelle du paquet."""
+    path = os.path.join(
+        os.path.dirname(__file__), os.pardir, "huawei_lte_api", "__init__.py"
+    )
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if "__version__" in line:
+                    m = re.search(r"'(.+?)'", line)
+                    if m:
+                        return m.group(1)
+    except Exception:
+        pass
+    return "N/A"
+
+
 def footer_html() -> str:
     date = get_last_update_date()
+    version = get_current_version()
     return (
         "<footer class='text-center mt-4'>"
-        f"Dernière mise à jour : {date} - &copy; DSI Baudinchateauneuf"
+        f"Dernière mise à jour : {date} - Version {version} - &copy; DSI Baudinchateauneuf"
         "</footer>"
     )
 
