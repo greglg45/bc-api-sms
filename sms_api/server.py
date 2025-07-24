@@ -71,7 +71,10 @@ class SMSHTTPServer(HTTPServer):
             else:
                 from .utils import warmup_kafka
 
-                warmup_kafka(self.kafka_consumer)
+                thread = warmup_kafka(
+                    self.kafka_consumer, timeout_ms=1000, max_attempts=10
+                )
+                thread.join()
 
     def restart(self):
         """Redémarre le service ou le processus."""
