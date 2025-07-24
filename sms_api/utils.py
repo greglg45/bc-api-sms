@@ -203,29 +203,28 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
     )
 
     end = time.time() + 30
-    for message in consumer:
-        headers = dict(message.headers or [])
-        msg_id = headers.get("kafka_correlationId")
-        if msg_id:
-            received_cid = msg_id.decode("utf-8")
-            logger.debug("Message reçu avec kafka_correlationId %s", received_cid)
-        else:
-            received_cid = None
-        if (
-            received_cid == correlation_id
-            and message.value
-        ):
-            phone = message.value
-            logger.info(
-                "Réponse reçue de Kafka: %s (kafka_correlationId %s)",
-                phone,
-                correlation_id,
-            )
-            producer.close()
-            consumer.close()
-            return phone
-        if time.time() > end:
-            break
+    while time.time() < end:
+        for message in consumer:
+            headers = dict(message.headers or [])
+            msg_id = headers.get("kafka_correlationId")
+            if msg_id:
+                received_cid = msg_id.decode("utf-8")
+                logger.debug("Message reçu avec kafka_correlationId %s", received_cid)
+            else:
+                received_cid = None
+            if (
+                received_cid == correlation_id
+                and message.value
+            ):
+                phone = message.value
+                logger.info(
+                    "Réponse reçue de Kafka: %s (kafka_correlationId %s)",
+                    phone,
+                    correlation_id,
+                )
+                producer.close()
+                consumer.close()
+                return phone
 
     logger.warning("Kafka n'a pas retourné de numéro pour %s", baudin_id)
 
