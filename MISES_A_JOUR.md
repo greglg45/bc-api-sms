@@ -33,5 +33,3 @@
 - Envoi du message même si aucune partition n'est assignée après le warmup Kafka.
 
 - Warmup Kafka bloquant au démarrage pour garantir l’assignation des partitions.
-
-- Augmentation du nombre d'essais du warmup Kafka pour fiabiliser la connexion.
