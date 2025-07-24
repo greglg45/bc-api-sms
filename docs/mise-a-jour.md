@@ -3,6 +3,8 @@
 Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **24 juillet 2025** : Utilisation des en-tetes kafka_correlationId, kafka_replyTopic et kafka_replyPartition
+
 - **24 juillet 2025** : Affichage de la version courante dans le pied de page et vérification automatique des mises à jour.
 - **25 juillet 2025** : La recherche par identifiant Baudin est déplacée dans une section repliable sur la page `/sendsms`.
 - **23 juillet 2025** : Mise en place d'un correlation ID pour la recherche de numéro via Kafka
