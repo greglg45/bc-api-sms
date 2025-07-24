@@ -72,7 +72,9 @@ class SMSHTTPServer(HTTPServer):
                 from .utils import warmup_kafka
 
                 thread = warmup_kafka(
-                    self.kafka_consumer, timeout_ms=1000, max_attempts=20
+
+                    self.kafka_consumer, timeout_ms=1000, max_attempts=60
+
                 )
                 thread.join()
 
