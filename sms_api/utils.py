@@ -204,6 +204,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
 
     end = time.time() + 30
     while time.time() < end:
+
         logger.debug(
             "Attente d'une réponse Kafka, expiration dans %.1fs",
             end - time.time(),
@@ -215,6 +216,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
             msg_id = headers.get("kafka_correlationId")
             if msg_id:
                 received_cid = msg_id.decode("utf-8")
+
                 logger.debug(
                     "Message reçu avec kafka_correlationId %s : %s",
                     received_cid,
