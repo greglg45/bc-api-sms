@@ -17,3 +17,4 @@
 - Correction de la désérialisation des messages Kafka quand la valeur est nulle.
 - Connexion Kafka persistante lors du démarrage (sans bloquer si indisponible).
 - Correction du lancement de install.sh depuis le bouton de mise à jour.
+- Allongement du session_timeout_ms à 30 minutes et envoi d'un heartbeat Kafka toutes les 10 minutes.
