@@ -16,6 +16,7 @@ __all__ = [
     "get_current_version",
     "footer_html",
     "get_phone_from_kafka",
+    "create_kafka_clients",
 ]
 
 
@@ -132,16 +133,10 @@ def footer_html() -> str:
     )
 
 
-def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
-    """Interroge Kafka pour obtenir le numéro associé à un identifiant."""
-    if not cfg.get("kafka_url"):
-        return ""
-
-    logger.info("Recherche du numéro via Kafka pour l'ID %s", baudin_id)
-
+def create_kafka_clients(cfg: dict):
+    """Crée un producteur et un consommateur Kafka."""
     from kafka import KafkaProducer, KafkaConsumer
     from kafka.errors import NoBrokersAvailable
-    import time
 
     common = {
         "bootstrap_servers": cfg["kafka_url"].split(","),
@@ -156,7 +151,11 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
                 "sasl_plain_password": cfg["kafka_password"],
             }
         )
-    if cfg.get("kafka_ca_cert") and cfg.get("kafka_privkey") and cfg.get("kafka_cert"):
+    if (
+        cfg.get("kafka_ca_cert")
+        and cfg.get("kafka_privkey")
+        and cfg.get("kafka_cert")
+    ):
         common.update(
             {
                 "ssl_cafile": cfg["kafka_ca_cert"],
@@ -167,22 +166,36 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
 
     try:
         logger.debug("Connexion à Kafka sur %s", cfg.get("kafka_url"))
-        producer = KafkaProducer(
-            **common, value_serializer=lambda v: v.encode("utf-8")
-        )
+        producer = KafkaProducer(**common, value_serializer=lambda v: v.encode("utf-8"))
         consumer = KafkaConsumer(
             "matrix.person.phone-number.reply",
             group_id=cfg.get("kafka_group_id", "sms-consumer"),
             **common,
             value_deserializer=lambda v: v.decode("utf-8") if v is not None else None,
             auto_offset_reset="latest",
-            # Stop iteration after 1s if no message was received so we can
-            # exit the loop when the timeout is reached
             consumer_timeout_ms=1000,
         )
+        return producer, consumer
     except NoBrokersAvailable:
         logger.error("Aucun broker Kafka disponible")
+        return None, None
+
+
+def get_phone_from_kafka(baudin_id: str, cfg: dict, *, producer=None, consumer=None) -> str:
+    """Interroge Kafka pour obtenir le numéro associé à un identifiant."""
+    if not cfg.get("kafka_url"):
         return ""
+
+    import time
+
+    logger.info("Recherche du numéro via Kafka pour l'ID %s", baudin_id)
+
+    close_clients = False
+    if producer is None or consumer is None:
+        producer, consumer = create_kafka_clients(cfg)
+        close_clients = True
+        if producer is None or consumer is None:
+            return ""
 
     correlation_id = str(uuid.uuid4())
     producer.send(
@@ -241,8 +254,9 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
                     phone,
                     correlation_id,
                 )
-                producer.close()
-                consumer.close()
+                if close_clients:
+                    producer.close()
+                    consumer.close()
                 return phone
 
         if not polled:
@@ -250,6 +264,7 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
 
     logger.warning("Kafka n'a pas retourné de numéro pour %s", baudin_id)
 
-    producer.close()
-    consumer.close()
+    if close_clients:
+        producer.close()
+        consumer.close()
     return ""

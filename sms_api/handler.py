@@ -151,7 +151,12 @@ class SMSHandler(BaseHTTPRequestHandler):
             "kafka_privkey": self.server.kafka_privkey,
             "kafka_cert": self.server.kafka_cert,
         }
-        phone = get_phone_from_kafka(baudin_id, cfg)
+        phone = get_phone_from_kafka(
+            baudin_id,
+            cfg,
+            producer=self.server.kafka_producer,
+            consumer=self.server.kafka_consumer,
+        )
         if phone:
             self._send_json(200, {"phone": phone})
         else:
@@ -791,9 +796,10 @@ class SMSHandler(BaseHTTPRequestHandler):
         self._send_json(200, {"update_available": available})
 
     def _run_update(self):
-        script = os.path.join(os.path.dirname(__file__), os.pardir, "install.sh")
+        script = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "install.sh")
+        script = os.path.abspath(script)
         try:
-            subprocess.Popen(["bash", script])
+            subprocess.Popen(["bash", script], cwd=os.path.dirname(script))
             self._send_json(200, {"status": "started"})
         except Exception as exc:
             self._json_error(500, str(exc))
