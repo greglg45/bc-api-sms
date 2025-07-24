@@ -239,6 +239,13 @@ def warmup_kafka(consumer, *, timeout_ms=1000, max_attempts=5):
                 logger.debug("Warmup Kafka en erreur: %s", exc)
             attempts += 1
 
+        try:
+            parts = consumer.assignment()
+            if parts:
+                consumer.seek_to_end(*parts)
+        except Exception as exc:  # pragma: no cover - log seulement
+            logger.debug("Seek_to_end en erreur: %s", exc)
+
     thread = threading.Thread(target=_run, daemon=True)
     thread.start()
     return thread
