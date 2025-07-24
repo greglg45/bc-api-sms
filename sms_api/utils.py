@@ -189,6 +189,7 @@ def create_kafka_clients(cfg: dict):
             **common,
             value_serializer=lambda v: v.encode("utf-8"),
             request_timeout_ms=1900000,
+            delivery_timeout_ms=2000000,
         )
         consumer = KafkaConsumer(
             "matrix.person.phone-number.reply",

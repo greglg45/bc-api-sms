@@ -21,4 +21,5 @@
 - Réduction de la largeur de la carte de recherche avancée dans /sendsms et ajout d'un emplacement réservé pour la future recherche de groupes.
 - Ajout d'un paramètre request_timeout_ms pour éviter l'erreur lors du démarrage.
 - Ajout de traces de log pour le déclenchement de la mise à jour.
+- Définition de `delivery_timeout_ms` sur le producteur Kafka pour éviter l'erreur "delivery_timeout_ms higher than linger_ms + request_timeout_ms" lors du démarrage.
 
