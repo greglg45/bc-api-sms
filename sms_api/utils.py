@@ -190,8 +190,6 @@ def create_kafka_clients(cfg: dict):
             value_serializer=lambda v: v.encode("utf-8"),
             request_timeout_ms=1900000,
             delivery_timeout_ms=2000000,
-
-            connections_max_idle_ms=2000000,
         )
         consumer = KafkaConsumer(
             "matrix.person.phone-number.reply",
@@ -199,7 +197,6 @@ def create_kafka_clients(cfg: dict):
             session_timeout_ms=1800000,
             heartbeat_interval_ms=600000,
             request_timeout_ms=1900000,
-            connections_max_idle_ms=2000000,
             **common,
             value_deserializer=lambda v: v.decode("utf-8") if v is not None else None,
             auto_offset_reset="latest",
