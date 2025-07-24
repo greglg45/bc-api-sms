@@ -203,29 +203,48 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict) -> str:
     )
 
     end = time.time() + 30
-    for message in consumer:
-        headers = dict(message.headers or [])
-        msg_id = headers.get("kafka_correlationId")
-        if msg_id:
-            received_cid = msg_id.decode("utf-8")
-            logger.debug("Message reçu avec kafka_correlationId %s", received_cid)
-        else:
-            received_cid = None
-        if (
-            received_cid == correlation_id
-            and message.value
-        ):
-            phone = message.value
-            logger.info(
-                "Réponse reçue de Kafka: %s (kafka_correlationId %s)",
-                phone,
-                correlation_id,
-            )
-            producer.close()
-            consumer.close()
-            return phone
-        if time.time() > end:
-            break
+    while time.time() < end:
+        logger.debug(
+            "Attente d'une réponse Kafka, expiration dans %.1fs",
+            end - time.time(),
+        )
+        polled = False
+        for message in consumer:
+            polled = True
+            headers = dict(message.headers or [])
+            msg_id = headers.get("kafka_correlationId")
+            if msg_id:
+                received_cid = msg_id.decode("utf-8")
+                logger.debug(
+                    "Message reçu avec kafka_correlationId %s : %s",
+                    received_cid,
+                    message.value,
+                )
+            else:
+                received_cid = None
+                logger.debug("Message reçu sans correlation id : %s", message.value)
+
+            if received_cid != correlation_id:
+                logger.debug(
+                    "Message ignoré (correlation id %s attendu, %s reçu)",
+                    correlation_id,
+                    received_cid,
+                )
+                continue
+
+            if message.value:
+                phone = message.value
+                logger.info(
+                    "Réponse reçue de Kafka: %s (kafka_correlationId %s)",
+                    phone,
+                    correlation_id,
+                )
+                producer.close()
+                consumer.close()
+                return phone
+
+        if not polled:
+            logger.debug("Aucun message reçu pendant cette tentative")
 
     logger.warning("Kafka n'a pas retourné de numéro pour %s", baudin_id)
 
