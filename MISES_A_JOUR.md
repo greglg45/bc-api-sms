@@ -11,3 +11,5 @@
 - Amélioration du bouton de recherche avancée via Kafka sur la page `/sendsms`.
 - Ajout des en-tetes kafka_correlationId, kafka_replyTopic et kafka_replyPartition
 - Correction du délai d'attente lors de la recherche du numéro via Kafka.
+- Ajout de traces détaillées pour debugger la récupération du numéro via Kafka.
+
