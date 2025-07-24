@@ -68,6 +68,10 @@ class SMSHTTPServer(HTTPServer):
                 logging.getLogger(__name__).warning(
                     "Impossible de se connecter à Kafka, la fonctionnalité sera desactivée"
                 )
+            else:
+                from .utils import warmup_kafka
+
+                warmup_kafka(self.kafka_consumer)
 
     def restart(self):
         """Redémarre le service ou le processus."""

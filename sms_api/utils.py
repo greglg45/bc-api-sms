@@ -227,6 +227,20 @@ def create_kafka_clients(cfg: dict):
         return None, None
 
 
+def warmup_kafka(consumer, timeout_ms=1000):
+    """Effectue un poll en tâche de fond pour établir la connexion."""
+
+    def _run():
+        try:
+            consumer.poll(timeout_ms=timeout_ms)
+        except Exception as exc:  # pragma: no cover - log seulement
+            logger.debug("Warmup Kafka en erreur: %s", exc)
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
+    return thread
+
+
 def get_phone_from_kafka(baudin_id: str, cfg: dict, *, producer=None, consumer=None) -> str:
     """Interroge Kafka pour obtenir le numéro associé à un identifiant."""
     if not cfg.get("kafka_url"):
