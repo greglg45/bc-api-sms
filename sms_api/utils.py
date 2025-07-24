@@ -260,6 +260,9 @@ def get_phone_from_kafka(baudin_id: str, cfg: dict, *, producer=None, consumer=N
         if producer is None or consumer is None:
             return ""
 
+    if not consumer.assignment():
+        warmup_kafka(consumer, timeout_ms=1000, max_attempts=20)
+
     correlation_id = str(uuid.uuid4())
     producer.send(
         "matrix.person.phone-number",
