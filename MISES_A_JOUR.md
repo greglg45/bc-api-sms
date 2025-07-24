@@ -15,3 +15,5 @@
 
 
 - Correction de la désérialisation des messages Kafka quand la valeur est nulle.
+- Connexion Kafka persistante lors du démarrage (sans bloquer si indisponible).
+- Correction du lancement de install.sh depuis le bouton de mise à jour.
