@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler
 import html
 import threading
 import subprocess
+import logging
 
 from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
@@ -22,6 +23,8 @@ from .utils import (
 )
 
 OPENAPI_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "openapi.json")
+
+logger = logging.getLogger(__name__)
 
 SIGNAL_LEVELS = {
     0: "     ",
@@ -790,6 +793,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .decode()
                 .strip()
             )
+            logger.debug("Vérification des mises à jour sur la branche %s", branch)
             subprocess.run(["git", "fetch"], cwd=repo_dir, check=False)
             ahead = int(
                 subprocess.check_output(
@@ -800,6 +804,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .strip()
             )
             available = ahead > 0
+            logger.debug("Commits en attente: %s", ahead)
         except Exception:
             available = False
         self._send_json(200, {"update_available": available})
@@ -807,10 +812,13 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _run_update(self):
         script = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "install.sh")
         script = os.path.abspath(script)
+        logger.info("Lancement de la mise à jour avec %s", script)
         try:
             subprocess.Popen(["bash", script], cwd=os.path.dirname(script))
+            logger.info("Script de mise à jour démarré")
             self._send_json(200, {"status": "started"})
         except Exception as exc:
+            logger.error("Erreur lors du lancement de la mise à jour: %s", exc)
             self._json_error(500, str(exc))
 
     def _serve_docs(self):

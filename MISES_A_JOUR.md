@@ -19,3 +19,4 @@
 - Correction du lancement de install.sh depuis le bouton de mise à jour.
 - Allongement du session_timeout_ms à 30 minutes et envoi d'un heartbeat Kafka toutes les 10 minutes.
 - Réduction de la largeur de la carte de recherche avancée dans /sendsms et ajout d'un emplacement réservé pour la future recherche de groupes.
+- Ajout de traces de log pour le déclenchement de la mise à jour.
