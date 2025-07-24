@@ -185,12 +185,17 @@ def create_kafka_clients(cfg: dict):
 
     try:
         logger.debug("Connexion à Kafka sur %s", cfg.get("kafka_url"))
-        producer = KafkaProducer(**common, value_serializer=lambda v: v.encode("utf-8"))
+        producer = KafkaProducer(
+            **common,
+            value_serializer=lambda v: v.encode("utf-8"),
+            request_timeout_ms=1900000,
+        )
         consumer = KafkaConsumer(
             "matrix.person.phone-number.reply",
             group_id=cfg.get("kafka_group_id", "sms-consumer"),
             session_timeout_ms=1800000,
             heartbeat_interval_ms=600000,
+            request_timeout_ms=1900000,
             **common,
             value_deserializer=lambda v: v.decode("utf-8") if v is not None else None,
             auto_offset_reset="latest",
