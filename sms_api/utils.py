@@ -227,14 +227,17 @@ def create_kafka_clients(cfg: dict):
         return None, None
 
 
-def warmup_kafka(consumer, timeout_ms=1000):
-    """Effectue un poll en tâche de fond pour établir la connexion."""
+def warmup_kafka(consumer, *, timeout_ms=1000, max_attempts=5):
+    """Pré-initialise la connexion Kafka sans bloquer le thread principal."""
 
     def _run():
-        try:
-            consumer.poll(timeout_ms=timeout_ms)
-        except Exception as exc:  # pragma: no cover - log seulement
-            logger.debug("Warmup Kafka en erreur: %s", exc)
+        attempts = 0
+        while attempts < max_attempts and not consumer.assignment():
+            try:
+                consumer.poll(timeout_ms=timeout_ms)
+            except Exception as exc:  # pragma: no cover - log seulement
+                logger.debug("Warmup Kafka en erreur: %s", exc)
+            attempts += 1
 
     thread = threading.Thread(target=_run, daemon=True)
     thread.start()

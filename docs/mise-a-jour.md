@@ -1,9 +1,10 @@
 # Journal des mises à jour
 
-Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
+- Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
 - **30 juillet 2025** : Lancement du heartbeat Kafka uniquement après un premier `poll(0)` du consommateur
+- **30 juillet 2025** : Correction de la pré-initialisation Kafka (plusieurs `poll` jusqu'à l'assignation)
 - **24 juillet 2025** : Ajout de traces de log pour le déclenchement de la mise à jour
 
 - **24 juillet 2025** : Utilisation des en-tetes kafka_correlationId, kafka_replyTopic et kafka_replyPartition
