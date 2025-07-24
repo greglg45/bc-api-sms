@@ -3,6 +3,8 @@ import re
 import sqlite3
 import logging
 import uuid
+import threading
+import time
 from datetime import datetime
 
 
@@ -133,6 +135,23 @@ def footer_html() -> str:
     )
 
 
+def _start_consumer_heartbeat(consumer, interval=600):
+    """Lance un thread envoyant periodiquement poll(0) sur le consommateur."""
+
+    def _loop():
+        while getattr(consumer, "_hb_running", True):
+            try:
+                consumer.poll(0)
+            except Exception as exc:  # pragma: no cover - log seulement
+                logger.debug("Heartbeat Kafka en erreur: %s", exc)
+            time.sleep(interval)
+
+    consumer._hb_running = True
+    thread = threading.Thread(target=_loop, daemon=True)
+    thread.start()
+    consumer._hb_thread = thread
+
+
 def create_kafka_clients(cfg: dict):
     """Crée un producteur et un consommateur Kafka."""
     from kafka import KafkaProducer, KafkaConsumer
@@ -170,11 +189,25 @@ def create_kafka_clients(cfg: dict):
         consumer = KafkaConsumer(
             "matrix.person.phone-number.reply",
             group_id=cfg.get("kafka_group_id", "sms-consumer"),
+            session_timeout_ms=1800000,
+            heartbeat_interval_ms=600000,
             **common,
             value_deserializer=lambda v: v.decode("utf-8") if v is not None else None,
             auto_offset_reset="latest",
             consumer_timeout_ms=1000,
         )
+        _start_consumer_heartbeat(consumer)
+
+        original_close = consumer.close
+
+        def _close(*args, **kwargs):
+            consumer._hb_running = False
+            if hasattr(consumer, "_hb_thread"):
+                consumer._hb_thread.join(timeout=1)
+            original_close(*args, **kwargs)
+
+        consumer.close = _close
+
         return producer, consumer
     except NoBrokersAvailable:
         logger.error("Aucun broker Kafka disponible")
