@@ -202,6 +202,11 @@ def create_kafka_clients(cfg: dict):
             auto_offset_reset="latest",
             consumer_timeout_ms=1000,
         )
+        try:
+            consumer.poll(0)
+        except Exception as exc:  # pragma: no cover - log seulement
+            logger.debug("Première poll Kafka en erreur: %s", exc)
+
         _start_consumer_heartbeat(consumer)
 
         original_close = consumer.close

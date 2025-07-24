@@ -22,4 +22,5 @@
 - Ajout d'un paramètre request_timeout_ms pour éviter l'erreur lors du démarrage.
 - Ajout de traces de log pour le déclenchement de la mise à jour.
 - Définition de `delivery_timeout_ms` sur le producteur Kafka pour éviter l'erreur "delivery_timeout_ms higher than linger_ms + request_timeout_ms" lors du démarrage.
+- Correctif : lancement du heartbeat Kafka uniquement après un premier `poll(0)` du consommateur.
 
