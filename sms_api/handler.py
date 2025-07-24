@@ -595,17 +595,26 @@ class SMSHandler(BaseHTTPRequestHandler):
                     🔎 Recherche avancée via Kafka
                 </button>
                 <div class='collapse mb-3' id='baudinSearch'>
-                    <div class='card card-body'>
-                        <div class='mb-3'>
-                            <label for='baudinId' class='form-label'>Identifiant Baudin</label>
-                            <div class='input-group'>
-                                <input type='text' id='baudinId' class='form-control'>
-                                <button type='button' class='btn btn-secondary' onclick='searchBaudin()'>Rechercher</button>
+                    <div class='row g-3'>
+                        <div class='col-md-6'>
+                            <div class='card card-body h-100'>
+                                <div class='mb-3'>
+                                    <label for='baudinId' class='form-label'>Identifiant Baudin</label>
+                                    <div class='input-group'>
+                                        <input type='text' id='baudinId' class='form-control'>
+                                        <button type='button' class='btn btn-secondary' onclick='searchBaudin()'>Rechercher</button>
+                                    </div>
+                                </div>
+                                <div id='baudinResult' class='mb-3' style='display:none;'>
+                                    <span id='foundPhone'></span>
+                                    <button type='button' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
+                                </div>
                             </div>
                         </div>
-                        <div id='baudinResult' class='mb-3' style='display:none;'>
-                            <span id='foundPhone'></span>
-                            <button type='button' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
+                        <div class='col-md-6'>
+                            <div class='card card-body h-100'>
+                                <p class='text-muted mb-0'>Recherche de groupe à venir...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
