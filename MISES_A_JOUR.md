@@ -30,3 +30,5 @@
 - Le bouton "Ajouter" de la recherche avancée via Kafka disparaît après avoir ajouté le numéro dans /sendsms.
 - Nouvelle tentative de warmup Kafka avant chaque recherche de numéro.
 - Positionnement du consommateur Kafka en fin de partition lors du warmup pour ignorer les anciens messages.
+- Les bandeaux d'en-tête utilisent 'bg-body-tertiary' pour s'adapter au mode sombre.
+- Sur la page /sendsms, l'entête indique maintenant 'Envoyer un SMS'.
