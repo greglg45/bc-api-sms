@@ -33,3 +33,4 @@
 - Les bandeaux d'en-tête utilisent 'bg-body-tertiary' pour s'adapter au mode sombre.
 - Sur la page /sendsms, l'entête indique maintenant 'Envoyer un SMS'.
 - Ajout d'une recherche de numéro via une API externe configurable.
+- Correction du typage de la fonction get_phone_from_api pour compatibilite Python 3.9.

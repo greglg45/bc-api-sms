@@ -1,7 +1,8 @@
 import requests
+from typing import Optional
 
 
-def get_phone_from_api(initials: str, base_url: str, api_key: str | None = None) -> str:
+def get_phone_from_api(initials: str, base_url: str, api_key: Optional[str] = None) -> str:
     """Récupère le numéro de téléphone d'un utilisateur via une API externe.
 
     Args:
