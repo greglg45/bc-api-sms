@@ -5,13 +5,33 @@
 
 set -e
 
+NON_INTERACTIVE=false
+
+# Parse command line options
+while [[ "$1" == -* ]]; do
+    case "$1" in
+        -y|--yes)
+            NON_INTERACTIVE=true
+            shift
+            ;;
+        *)
+            echo "Option inconnue : $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
 # Prompt user for a value with an optional default.
 prompt_var() {
     local var_name=$1
     local prompt=$2
     local default=$3
     local input
-    read -r -p "$prompt [${default}]: " input
+    if [ "$NON_INTERACTIVE" = true ] || ! [ -t 0 ]; then
+        input=""
+    else
+        read -r -p "$prompt [${default}]: " input
+    fi
     if [ -z "$input" ]; then
         eval "$var_name=\"$default\""
     else
@@ -25,8 +45,12 @@ prompt_password_var() {
     local prompt=$2
     local default=$3
     local input
-    read -r -s -p "$prompt [${default}]: " input
-    echo
+    if [ "$NON_INTERACTIVE" = true ] || ! [ -t 0 ]; then
+        input=""
+    else
+        read -r -s -p "$prompt [${default}]: " input
+        echo
+    fi
     if [ -z "$input" ]; then
         eval "$var_name=\"$default\""
     else

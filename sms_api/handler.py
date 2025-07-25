@@ -822,7 +822,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         script = os.path.abspath(script)
         logger.info("Lancement de la mise à jour avec %s", script)
         try:
-            subprocess.Popen(["bash", script], cwd=os.path.dirname(script))
+            subprocess.Popen(["bash", script, "--yes"], cwd=os.path.dirname(script))
             logger.info("Script de mise à jour démarré")
             self._send_json(200, {"status": "started"})
         except Exception as exc:
