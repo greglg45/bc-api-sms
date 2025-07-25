@@ -30,6 +30,8 @@ class SMSHTTPServer(HTTPServer):
         kafka_ca_cert="",
         kafka_privkey="",
         kafka_cert="",
+        sms_api_url="",
+        sms_api_key="",
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -49,6 +51,8 @@ class SMSHTTPServer(HTTPServer):
         self.kafka_ca_cert = kafka_ca_cert
         self.kafka_privkey = kafka_privkey
         self.kafka_cert = kafka_cert
+        self.sms_api_url = sms_api_url
+        self.sms_api_key = sms_api_key
 
         self.kafka_producer = None
         self.kafka_consumer = None

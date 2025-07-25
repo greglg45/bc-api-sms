@@ -68,6 +68,8 @@ def main():
     parser.add_argument("--kafka-ca-cert", type=str, default=os.getenv("KAFKA_CA_CERT", ""))
     parser.add_argument("--kafka-privkey", type=str, default=os.getenv("KAFKA_PRIVKEY", ""))
     parser.add_argument("--kafka-cert", type=str, default=os.getenv("KAFKA_CERT", ""))
+    parser.add_argument("--sms-api-url", type=str, default=os.getenv("SMS_API_URL", ""))
+    parser.add_argument("--sms-api-key", type=str, default=os.getenv("SMS_API_EXT_KEY", ""))
 
     args = parser.parse_args()
 
@@ -94,6 +96,8 @@ def main():
     kafka_ca_cert = config.get("kafka_ca_cert", args.kafka_ca_cert)
     kafka_privkey = config.get("kafka_privkey", args.kafka_privkey)
     kafka_cert = config.get("kafka_cert", args.kafka_cert)
+    sms_api_url = config.get("sms_api_url", args.sms_api_url)
+    sms_api_key = config.get("sms_api_key", args.sms_api_key)
 
     server = SMSHTTPServer(
         (args.host, args.port),
@@ -115,6 +119,8 @@ def main():
         kafka_ca_cert=kafka_ca_cert,
         kafka_privkey=kafka_privkey,
         kafka_cert=kafka_cert,
+        sms_api_url=sms_api_url,
+        sms_api_key=sms_api_key,
     )
 
     if certfile and keyfile:
