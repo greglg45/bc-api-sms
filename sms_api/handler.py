@@ -341,7 +341,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     </div>
                 </div>
             </div>
-            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+            <div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>
                 <h1 class='display-6 text-company mb-0'>Informations du modem</h1>
             </div>
             <div class='container'>
@@ -379,7 +379,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
             "</head><body class='container-fluid px-3 py-4'>",
             self._navbar_html(),
-            "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
+            "<div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>",
             "<h1 class='display-6 text-company mb-0'>Historique des SMS</h1>",
             "</div>",
             "<div class='container'>",
@@ -464,7 +464,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             "<script>function selectAll(){document.querySelectorAll('.rowchk').forEach(c=>c.checked=true);}</script>",
             "</head><body class='container-fluid px-3 py-4'>",
             self._navbar_html(),
-            "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
+            "<div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>",
             "<h1 class='display-6 text-company mb-0'>SMS reçus</h1>",
             "</div>",
             "<div class='container'>",
@@ -585,8 +585,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         </head>
         <body class='container-fluid px-3 py-4'>
             {NAVBAR}
-            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
-                <h1 class='display-6 text-company mb-0'>Tester l\'envoi de SMS</h1>
+            <div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>
+                <h1 class='display-6 text-company mb-0'>Envoyer un SMS</h1>
             </div>
             <div class='container'>
             <form id='smsForm' onsubmit='sendSms(event)' class='mb-3'>
@@ -662,7 +662,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         </head>
         <body class='container-fluid px-3 py-4'>
             {self._navbar_html()}
-            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+            <div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>
                 <h1 class='display-6 text-company mb-0'>Administration</h1>
             </div>
             <div class='container'>
@@ -848,7 +848,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         </head>
         <body class='container-fluid px-3 py-4'>
             {NAVBAR}
-            <div class='p-5 mb-4 bg-light rounded-3 text-center'>
+            <div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>
                 <h1 class='display-6 text-company mb-0'>Documentation de l\'API</h1>
             </div>
             <div class='container'>
@@ -927,7 +927,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                       "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;}.text-company{color:#0060ac;}</style>",
                       "</head><body class='container-fluid px-3 py-4'>",
                       "{NAVBAR}",
-                      "<div class='p-5 mb-4 bg-light rounded-3 text-center'>",
+                      "<div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>",
                       "<h1 class='display-6 text-company mb-0'>Journal des mises à jour</h1>",
                       "</div>",
                       "<div class='container'>"]
