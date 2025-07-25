@@ -3,6 +3,8 @@
 - Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **25 juillet 2025** : Ajout de max_poll_interval_ms pour éviter l'avertissement 'Consumer poll timeout has expired'
+
 - **25 juillet 2025** : Ajout d'une option --yes pour l'installation non interactive
 
 - **30 juillet 2025** : Lancement du heartbeat Kafka uniquement après un premier `poll(0)` du consommateur

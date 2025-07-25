@@ -32,3 +32,4 @@
 - Positionnement du consommateur Kafka en fin de partition lors du warmup pour ignorer les anciens messages.
 - Les bandeaux d'en-tête utilisent 'bg-body-tertiary' pour s'adapter au mode sombre.
 - Sur la page /sendsms, l'entête indique maintenant 'Envoyer un SMS'.
+- Ajout du paramètre max_poll_interval_ms=1800000 sur le consommateur Kafka pour éviter l'avertissement 'Consumer poll timeout has expired'.
