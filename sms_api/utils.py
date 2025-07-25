@@ -197,6 +197,7 @@ def create_kafka_clients(cfg: dict):
             group_id=cfg.get("kafka_group_id", "sms-consumer"),
             session_timeout_ms=1800000,
             heartbeat_interval_ms=600000,
+            max_poll_interval_ms=1800000,
             connections_max_idle_ms=3000000,
             request_timeout_ms=1900000,
             **common,
