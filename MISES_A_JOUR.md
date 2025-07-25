@@ -32,3 +32,5 @@
 - Positionnement du consommateur Kafka en fin de partition lors du warmup pour ignorer les anciens messages.
 - Les bandeaux d'en-tête utilisent 'bg-body-tertiary' pour s'adapter au mode sombre.
 - Sur la page /sendsms, l'entête indique maintenant 'Envoyer un SMS'.
+- Ajout d'une recherche de numéro via une API externe configurable.
+- Correctif : compatibilite Python 3.9 pour la recherche de numero via l'API.

@@ -165,6 +165,25 @@ class SMSHandler(BaseHTTPRequestHandler):
         else:
             self._json_error(404, "Numero introuvable")
 
+    def _serve_phone_api(self):
+        query = urllib.parse.urlparse(self.path).query
+        params = urllib.parse.parse_qs(query)
+        initials = params.get("initials", [""])[0].strip()
+        if not initials:
+            self._json_error(400, "initials manquant")
+            return
+        from .external_api import get_phone_from_api
+
+        phone = get_phone_from_api(
+            initials,
+            self.server.sms_api_url,
+            self.server.sms_api_key,
+        )
+        if phone:
+            self._send_json(200, {"phone": phone})
+        else:
+            self._json_error(404, "Numero introuvable")
+
     def _navbar_html(self) -> str:
         badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
         script = (
@@ -236,6 +255,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/phone":
             self._serve_phone()
+            return
+        if path == "/phone_api":
+            self._serve_phone_api()
             return
         if path.startswith("/readsms"):
             self._serve_readsms()
@@ -581,6 +603,43 @@ class SMSHandler(BaseHTTPRequestHandler):
                         alert('Erreur: ' + msg);
                     }
                 }
+
+                async function searchUserPhone() {
+                    const init = document.getElementById('userInitials').value.trim();
+                    if (!init) return;
+                    try {
+                        const r = await fetch('/phone_api?initials=' + encodeURIComponent(init));
+                        let phone = 'Introuvable';
+                        if (r.ok) {
+                            const j = await r.json();
+                            phone = j.phone || 'Introuvable';
+                        }
+                        document.getElementById('apiPhone').textContent = phone;
+                        document.getElementById('apiResult').style.display = 'block';
+                        const btn = document.getElementById('addApiPhoneBtn');
+                        if (phone && phone !== 'Introuvable' && phone !== 'Erreur') {
+                            btn.style.display = 'inline-block';
+                        } else {
+                            btn.style.display = 'none';
+                        }
+                    } catch(e) {
+                        document.getElementById('apiPhone').textContent = 'Erreur';
+                        document.getElementById('apiResult').style.display = 'block';
+                        document.getElementById('addApiPhoneBtn').style.display = 'none';
+                    }
+                }
+
+                function addApiPhone() {
+                    const phone = document.getElementById('apiPhone').textContent.trim();
+                    if (!phone || phone === 'Introuvable' || phone === 'Erreur') return;
+                    const to = document.getElementById('to');
+                    if (to.value.trim()) {
+                        to.value = to.value.trim() + ',' + phone;
+                    } else {
+                        to.value = phone;
+                    }
+                    document.getElementById('addApiPhoneBtn').style.display = 'none';
+                }
             </script>
         </head>
         <body class='container-fluid px-3 py-4'>
@@ -624,7 +683,17 @@ class SMSHandler(BaseHTTPRequestHandler):
                         </div>
                         <div class='col-md-6'>
                             <div class='card card-body h-100'>
-                                <p class='text-muted mb-0'>Recherche de groupe à venir...</p>
+                                <div class='mb-3'>
+                                    <label for='userInitials' class='form-label'>Utilisateurs Baudin</label>
+                                    <div class='input-group'>
+                                        <input type='text' id='userInitials' class='form-control'>
+                                        <button type='button' class='btn btn-secondary' onclick='searchUserPhone()'>Rechercher</button>
+                                    </div>
+                                </div>
+                                <div id='apiResult' class='mb-3' style='display:none;'>
+                                    <span id='apiPhone'></span>
+                                    <button type='button' id='addApiPhoneBtn' class='btn btn-company btn-sm ms-2' onclick='addApiPhone()'>Ajouter</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -682,6 +751,14 @@ class SMSHandler(BaseHTTPRequestHandler):
                 <div class='mb-3'>
                     <label for='api_key' class='form-label'>Clé API</label>
                     <input type='text' name='api_key' id='api_key' class='form-control' value='{html.escape(cfg.get("api_key", self.server.api_key or ""))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='sms_api_url' class='form-label'>URL API SMS</label>
+                    <input type='text' name='sms_api_url' id='sms_api_url' class='form-control' value='{html.escape(cfg.get("sms_api_url", self.server.sms_api_url))}'>
+                </div>
+                <div class='mb-3'>
+                    <label for='sms_api_key' class='form-label'>X-API-KEY API SMS</label>
+                    <input type='text' name='sms_api_key' id='sms_api_key' class='form-control' value='{html.escape(cfg.get("sms_api_key", self.server.sms_api_key))}'>
                 </div>
                 <div class='mb-3'>
                     <label for='certfile' class='form-label'>Certificat TLS</label>
@@ -747,6 +824,8 @@ class SMSHandler(BaseHTTPRequestHandler):
             'username': params.get('username', [''])[0],
             'password': params.get('password', [''])[0],
             'api_key': params.get('api_key', [''])[0],
+            'sms_api_url': params.get('sms_api_url', [''])[0],
+            'sms_api_key': params.get('sms_api_key', [''])[0],
             'certfile': params.get('certfile', [''])[0],
             'keyfile': params.get('keyfile', [''])[0],
             'kafka_client_id': params.get('kafka_client_id', [''])[0],
@@ -767,6 +846,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.server.username = cfg['username']
         self.server.password = cfg['password']
         self.server.api_key = cfg['api_key'] or None
+        self.server.sms_api_url = cfg['sms_api_url']
+        self.server.sms_api_key = cfg['sms_api_key']
         self.server.certfile = cfg['certfile'] or None
         self.server.keyfile = cfg['keyfile'] or None
         self.server.kafka_client_id = cfg['kafka_client_id'] or "sms"
