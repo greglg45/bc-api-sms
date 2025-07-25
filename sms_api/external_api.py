@@ -1,5 +1,8 @@
 import requests
+import logging
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 def get_phone_from_api(initials: str, base_url: str, api_key: Optional[str] = None) -> str:
@@ -14,6 +17,7 @@ def get_phone_from_api(initials: str, base_url: str, api_key: Optional[str] = No
         Le numéro de téléphone ou une chaîne vide si introuvable ou en cas d'erreur.
     """
     if not base_url:
+        logger.warning("Aucune URL d'API fournie, recherche impossible")
         return ""
 
     url = base_url.rstrip('/') + f"/matrix/api/persons/{initials}/phone-numbers"
@@ -21,18 +25,23 @@ def get_phone_from_api(initials: str, base_url: str, api_key: Optional[str] = No
     if api_key:
         headers["X-API-KEY"] = api_key
 
+    logger.info("Appel de l'API externe %s pour %s", url, initials)
     try:
         resp = requests.get(url, headers=headers, timeout=5)
+        logger.debug("Réponse %s: %s", resp.status_code, resp.text[:200])
         resp.raise_for_status()
         data = resp.json()
         if isinstance(data, list):
             for item in data:
                 phone = item.get("phoneNumber")
                 if phone:
+                    logger.info("Numéro trouvé via API pour %s: %s", initials, phone)
                     return phone
-    except Exception:
+    except Exception as exc:
+        logger.error("Erreur lors de l'appel à l'API externe: %s", exc)
         return ""
 
+    logger.warning("Numéro introuvable via API pour %s", initials)
     return ""
 
 

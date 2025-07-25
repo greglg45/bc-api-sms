@@ -174,11 +174,16 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         from .external_api import get_phone_from_api
 
+        logger.info("Recherche du numéro via l'API externe pour %s", initials)
         phone = get_phone_from_api(
             initials,
             self.server.sms_api_url,
             self.server.sms_api_key,
         )
+        if phone:
+            logger.info("Numéro obtenu via l'API pour %s: %s", initials, phone)
+        else:
+            logger.warning("Numéro introuvable via l'API pour %s", initials)
         if phone:
             self._send_json(200, {"phone": phone})
         else:
