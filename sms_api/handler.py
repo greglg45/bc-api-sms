@@ -168,7 +168,7 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _serve_phone_api(self):
         query = urllib.parse.urlparse(self.path).query
         params = urllib.parse.parse_qs(query)
-        initials = params.get("initials", [""])[0].strip()
+        initials = params.get("initials", [""])[0].strip().upper()
         if not initials:
             self._json_error(400, "initials manquant")
             return
@@ -610,7 +610,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 }
 
                 async function searchUserPhone() {
-                    const init = document.getElementById('userInitials').value.trim();
+                    const init = document.getElementById('userInitials').value.trim().toUpperCase();
                     if (!init) return;
                     try {
                         const r = await fetch('/phone_api?initials=' + encodeURIComponent(init));
