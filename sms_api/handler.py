@@ -605,10 +605,22 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <input type='text' id='apiKey' class='form-control'>
                 </div>
                 <button class='btn btn-company mb-3 w-100' type='button' data-bs-toggle='collapse' data-bs-target='#baudinSearch' aria-expanded='false' aria-controls='baudinSearch'>
-                    🔎 Recherche avancée via Kafka
+                    🔎 Recherche via l'API
                 </button>
                 <div class='collapse mb-3' id='baudinSearch'>
-                    <div class='card card-body'>fonctionnalité à venir</div>
+                    <div class='card card-body'>
+                        <div class='mb-3'>
+                            <label for='userInitials' class='form-label'>Utilisateurs Baudin</label>
+                            <div class='input-group'>
+                                <input type='text' id='userInitials' class='form-control'>
+                                <button type='button' class='btn btn-secondary' onclick='searchUserPhone()'>Rechercher</button>
+                            </div>
+                        </div>
+                        <div id='apiResult' class='mb-3' style='display:none;'>
+                            <span id='apiPhone'></span>
+                            <button type='button' id='addApiPhoneBtn' class='btn btn-company btn-sm ms-2' onclick='addApiPhone()'>Ajouter</button>
+                        </div>
+                    </div>
                 </div>
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
