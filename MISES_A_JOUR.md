@@ -36,3 +36,4 @@
 - Correction du typage de la fonction get_phone_from_api pour compatibilite Python 3.9.
 - Ajout de traces de log lors des recherches de numéro via l'API externe.
 - Transformation en majuscule des initiales lors de la recherche via l'API
+- Suppression des entrées '/sms_count' dans les logs

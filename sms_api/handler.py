@@ -216,6 +216,12 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _json_error(self, status, message):
         self._send_json(status, {"error": message})
 
+    def log_message(self, format, *args):
+        """Surcharge pour ignorer les requêtes trop fréquentes."""
+        if self.path.startswith("/sms_count"):
+            return
+        super().log_message(format, *args)
+
     def do_GET(self):
         path = urllib.parse.urlparse(self.path).path
 
