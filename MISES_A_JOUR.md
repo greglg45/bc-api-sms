@@ -38,3 +38,4 @@
 - Transformation en majuscule des initiales lors de la recherche via l'API
 - Suppression des entrées '/sms_count' dans les logs
 - Suppression de la recherche de numéro via Kafka.
+- Correction du crash au démarrage lorsque des paramètres Kafka sont encore présents.
