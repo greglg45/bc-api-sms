@@ -60,14 +60,6 @@ def main():
         default=5,
         help="Délai en secondes pour la connexion au modem",
     )
-    parser.add_argument("--kafka-client-id", type=str, default=os.getenv("KAFKA_CLIENT_ID", "sms"))
-    parser.add_argument("--kafka-url", type=str, default=os.getenv("KAFKA_URL", ""))
-    parser.add_argument("--kafka-group-id", type=str, default=os.getenv("KAFKA_GROUP_ID", "sms-consumer"))
-    parser.add_argument("--kafka-username", type=str, default=os.getenv("KAFKA_USERNAME", ""))
-    parser.add_argument("--kafka-password", type=str, default=os.getenv("KAFKA_PASSWORD", ""))
-    parser.add_argument("--kafka-ca-cert", type=str, default=os.getenv("KAFKA_CA_CERT", ""))
-    parser.add_argument("--kafka-privkey", type=str, default=os.getenv("KAFKA_PRIVKEY", ""))
-    parser.add_argument("--kafka-cert", type=str, default=os.getenv("KAFKA_CERT", ""))
     parser.add_argument("--sms-api-url", type=str, default=os.getenv("SMS_API_URL", ""))
     parser.add_argument("--sms-api-key", type=str, default=os.getenv("SMS_API_EXT_KEY", ""))
 
@@ -88,14 +80,6 @@ def main():
     certfile = config.get("certfile", args.certfile)
     keyfile = config.get("keyfile", args.keyfile)
     timeout = int(config.get("timeout", args.timeout))
-    kafka_client_id = config.get("kafka_client_id", args.kafka_client_id)
-    kafka_url = config.get("kafka_url", args.kafka_url)
-    kafka_group_id = config.get("kafka_group_id", args.kafka_group_id)
-    kafka_username = config.get("kafka_username", args.kafka_username)
-    kafka_password = config.get("kafka_password", args.kafka_password)
-    kafka_ca_cert = config.get("kafka_ca_cert", args.kafka_ca_cert)
-    kafka_privkey = config.get("kafka_privkey", args.kafka_privkey)
-    kafka_cert = config.get("kafka_cert", args.kafka_cert)
     sms_api_url = config.get("sms_api_url", args.sms_api_url)
     sms_api_key = config.get("sms_api_key", args.sms_api_key)
 
@@ -111,17 +95,19 @@ def main():
         keyfile=keyfile,
         config_path=args.config,
         timeout=timeout,
-        kafka_client_id=kafka_client_id,
-        kafka_url=kafka_url,
-        kafka_group_id=kafka_group_id,
-        kafka_username=kafka_username,
-        kafka_password=kafka_password,
-        kafka_ca_cert=kafka_ca_cert,
-        kafka_privkey=kafka_privkey,
-        kafka_cert=kafka_cert,
         sms_api_url=sms_api_url,
         sms_api_key=sms_api_key,
     )
+
+    # Attributs Kafka conservés pour compatibilité de l'interface d'administration
+    server.kafka_client_id = config.get("kafka_client_id", os.getenv("KAFKA_CLIENT_ID", "sms"))
+    server.kafka_url = config.get("kafka_url", os.getenv("KAFKA_URL", ""))
+    server.kafka_group_id = config.get("kafka_group_id", os.getenv("KAFKA_GROUP_ID", "sms-consumer"))
+    server.kafka_username = config.get("kafka_username", os.getenv("KAFKA_USERNAME", ""))
+    server.kafka_password = config.get("kafka_password", os.getenv("KAFKA_PASSWORD", ""))
+    server.kafka_ca_cert = config.get("kafka_ca_cert", os.getenv("KAFKA_CA_CERT", ""))
+    server.kafka_privkey = config.get("kafka_privkey", os.getenv("KAFKA_PRIVKEY", ""))
+    server.kafka_cert = config.get("kafka_cert", os.getenv("KAFKA_CERT", ""))
 
     if certfile and keyfile:
         import ssl
