@@ -202,23 +202,6 @@
                     }
       }
     },
-    "/phone": {
-      "get": {
-        "summary": "Recherche d'un numéro via l'identifiant Baudin",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "id",
-            "required": true,
-            "schema": {"type": "string"}
-          }
-        ],
-        "responses": {
-          "200": {"description": "Numéro trouvé", "content": {"application/json": {"schema": {"type": "object"}}}},
-          "404": {"description": "Numéro introuvable"}
-        }
-      }
-    },
                 "required": [
                   "ids"
                 ]

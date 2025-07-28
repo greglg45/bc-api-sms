@@ -19,7 +19,6 @@ from .utils import (
     log_request,
     validate_request,
     footer_html,
-    get_phone_from_kafka,
 )
 
 OPENAPI_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "openapi.json")
@@ -137,34 +136,6 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _serve_sms_count(self):
         self._send_json(200, {"count": self._get_sms_count()})
 
-    def _serve_phone(self):
-        query = urllib.parse.urlparse(self.path).query
-        params = urllib.parse.parse_qs(query)
-        baudin_id = params.get("id", [""])[0].strip()
-        if not baudin_id:
-            self._json_error(400, "id manquant")
-            return
-        cfg = {
-            "kafka_client_id": self.server.kafka_client_id,
-            "kafka_url": self.server.kafka_url,
-            "kafka_group_id": self.server.kafka_group_id,
-            "kafka_username": self.server.kafka_username,
-            "kafka_password": self.server.kafka_password,
-            "kafka_ca_cert": self.server.kafka_ca_cert,
-            "kafka_privkey": self.server.kafka_privkey,
-            "kafka_cert": self.server.kafka_cert,
-        }
-        phone = get_phone_from_kafka(
-            baudin_id,
-            cfg,
-            producer=self.server.kafka_producer,
-            consumer=self.server.kafka_consumer,
-        )
-        if phone:
-            self._send_json(200, {"phone": phone})
-        else:
-            self._json_error(404, "Numero introuvable")
-
     def _serve_phone_api(self):
         query = urllib.parse.urlparse(self.path).query
         params = urllib.parse.parse_qs(query)
@@ -263,9 +234,6 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/sms_count":
             self._serve_sms_count()
-            return
-        if path == "/phone":
-            self._serve_phone()
             return
         if path == "/phone_api":
             self._serve_phone_api()
@@ -552,42 +520,6 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .text-company {color:#0060ac;}
             </style>
             <script>
-                async function searchBaudin() {
-                    const id = document.getElementById('baudinId').value.trim();
-                    if (!id) return;
-                    try {
-                        const r = await fetch('/phone?id=' + encodeURIComponent(id));
-                        let phone = 'Introuvable';
-                        if (r.ok) {
-                            const j = await r.json();
-                            phone = j.phone || 'Introuvable';
-                        }
-                        document.getElementById('foundPhone').textContent = phone;
-                        document.getElementById('baudinResult').style.display = 'block';
-                        const btn = document.getElementById('addPhoneBtn');
-                        if (phone && phone !== 'Introuvable' && phone !== 'Erreur') {
-                            btn.style.display = 'inline-block';
-                        } else {
-                            btn.style.display = 'none';
-                        }
-                    } catch(e) {
-                        document.getElementById('foundPhone').textContent = 'Erreur';
-                        document.getElementById('baudinResult').style.display = 'block';
-                        document.getElementById('addPhoneBtn').style.display = 'none';
-                    }
-                }
-
-                function addPhone() {
-                    const phone = document.getElementById('foundPhone').textContent.trim();
-                    if (!phone || phone === 'Introuvable' || phone === 'Erreur') return;
-                    const to = document.getElementById('to');
-                    if (to.value.trim()) {
-                        to.value = to.value.trim() + ',' + phone;
-                    } else {
-                        to.value = phone;
-                    }
-                    document.getElementById('addPhoneBtn').style.display = 'none';
-                }
 
                 async function sendSms(event) {
                     event.preventDefault();
@@ -676,38 +608,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     🔎 Recherche avancée via Kafka
                 </button>
                 <div class='collapse mb-3' id='baudinSearch'>
-                    <div class='row g-3'>
-                        <div class='col-md-6'>
-                            <div class='card card-body h-100'>
-                                <div class='mb-3'>
-                                    <label for='baudinId' class='form-label'>Identifiant Baudin</label>
-                                    <div class='input-group'>
-                                        <input type='text' id='baudinId' class='form-control'>
-                                        <button type='button' class='btn btn-secondary' onclick='searchBaudin()'>Rechercher</button>
-                                    </div>
-                                </div>
-                                <div id='baudinResult' class='mb-3' style='display:none;'>
-                                    <span id='foundPhone'></span>
-                                    <button type='button' id='addPhoneBtn' class='btn btn-company btn-sm ms-2' onclick='addPhone()'>Ajouter</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class='col-md-6'>
-                            <div class='card card-body h-100'>
-                                <div class='mb-3'>
-                                    <label for='userInitials' class='form-label'>Utilisateurs Baudin</label>
-                                    <div class='input-group'>
-                                        <input type='text' id='userInitials' class='form-control'>
-                                        <button type='button' class='btn btn-secondary' onclick='searchUserPhone()'>Rechercher</button>
-                                    </div>
-                                </div>
-                                <div id='apiResult' class='mb-3' style='display:none;'>
-                                    <span id='apiPhone'></span>
-                                    <button type='button' id='addApiPhoneBtn' class='btn btn-company btn-sm ms-2' onclick='addApiPhone()'>Ajouter</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class='card card-body'>fonctionnalité à venir</div>
                 </div>
                 <button type='submit' class='btn btn-company'>Envoyer</button>
             </form>
