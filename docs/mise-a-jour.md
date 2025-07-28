@@ -3,6 +3,7 @@
 - Cette page recense les évolutions majeures de l'application. Elle doit être mise à jour à chaque merge sur la branche `main`.
 
 ## Historique
+- **25 juillet 2025** : Suppression de la recherche de numéro via Kafka.
 - **25 juillet 2025** : Suppression des entrées '/sms_count' dans les logs
 
 - **25 juillet 2025** : Transformation en majuscule des initiales lors de la recherche via l'API

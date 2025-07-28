@@ -37,3 +37,4 @@
 - Ajout de traces de log lors des recherches de numéro via l'API externe.
 - Transformation en majuscule des initiales lors de la recherche via l'API
 - Suppression des entrées '/sms_count' dans les logs
+- Suppression de la recherche de numéro via Kafka.
