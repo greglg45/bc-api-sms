@@ -39,3 +39,4 @@
 - Suppression des entrées '/sms_count' dans les logs
 - Suppression de la recherche de numéro via Kafka.
 - Correction du crash au démarrage lorsque des paramètres Kafka sont encore présents.
+- Réactivation de la recherche de numéro via l'API sur la page `/sendsms`.
