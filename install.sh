@@ -77,6 +77,7 @@ PORT="80"
 API_KEY=""
 CERTFILE=""
 KEYFILE=""
+ENVIRONMENT="Production"
 
 # Install required packages if missing
 install_deps() {
@@ -174,7 +175,7 @@ Type=simple
 WorkingDirectory=$INSTALL_DIR
 ExecStart=$INSTALL_DIR/venv/bin/python sms_http_api.py \
     $ROUTER_URL --username $ROUTER_USERNAME --password $ROUTER_PASSWORD \
-    --host $HOST --port $PORT$api_key_arg$https_args
+    --host $HOST --port $PORT --env "$ENVIRONMENT"$api_key_arg$https_args
 Restart=on-failure
 
 [Install]
@@ -208,6 +209,7 @@ main() {
         prompt_var API_KEY "API key (blank to disable)" "$API_KEY"
         prompt_var CERTFILE "TLS certificate file (blank to disable HTTPS)" "$CERTFILE"
         prompt_var KEYFILE "TLS private key file" "$KEYFILE"
+        prompt_var ENVIRONMENT "Environnement" "$ENVIRONMENT"
     fi
 
     install_deps
@@ -244,6 +246,7 @@ PORT="$PORT"
 API_KEY="$API_KEY"
 CERTFILE="$CERTFILE"
 KEYFILE="$KEYFILE"
+ENVIRONMENT="$ENVIRONMENT"
 EOF
     sudo chmod 600 "$CONFIG_FILE"
 }

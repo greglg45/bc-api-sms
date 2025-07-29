@@ -62,6 +62,7 @@ def main():
     )
     parser.add_argument("--sms-api-url", type=str, default=os.getenv("SMS_API_URL", ""))
     parser.add_argument("--sms-api-key", type=str, default=os.getenv("SMS_API_EXT_KEY", ""))
+    parser.add_argument("--env", type=str, default=os.getenv("SMS_API_ENV", "Production"))
 
     args = parser.parse_args()
 
@@ -82,6 +83,7 @@ def main():
     timeout = int(config.get("timeout", args.timeout))
     sms_api_url = config.get("sms_api_url", args.sms_api_url)
     sms_api_key = config.get("sms_api_key", args.sms_api_key)
+    env = config.get("env", args.env)
 
     server = SMSHTTPServer(
         (args.host, args.port),
@@ -97,6 +99,7 @@ def main():
         timeout=timeout,
         sms_api_url=sms_api_url,
         sms_api_key=sms_api_key,
+        env=env,
     )
 
     # Attributs Kafka conservés pour compatibilité de l'interface d'administration
