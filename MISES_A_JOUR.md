@@ -42,3 +42,4 @@
 - Réactivation de la recherche de numéro via l'API sur la page `/sendsms`.
 - Ajout d'une option --fresh pour réinstaller complètement sans utiliser la configuration existante.
 - Sécurisation de la suppression du répertoire d'installation dans install.sh.
+- Saisie de l'"environnement" lors de l'installation et affichage dans l'en-tête.

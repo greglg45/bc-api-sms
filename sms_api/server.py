@@ -24,6 +24,7 @@ class SMSHTTPServer(HTTPServer):
         timeout=5,
         sms_api_url="",
         sms_api_key="",
+        environment="",
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -37,6 +38,7 @@ class SMSHTTPServer(HTTPServer):
         self.timeout = timeout
         self.sms_api_url = sms_api_url
         self.sms_api_key = sms_api_key
+        self.environment = environment
 
     def restart(self):
         """Redémarre le service ou le processus."""

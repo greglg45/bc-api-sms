@@ -66,7 +66,7 @@ NAVBAR_TEMPLATE = """
         <button class='navbar-toggler' type='button' data-bs-toggle='offcanvas' data-bs-target='#menu' aria-controls='menu'>
           <span class='navbar-toggler-icon'></span>
         </button>
-        <span class='navbar-brand ms-2'>API SMS BC</span>
+        <span class='navbar-brand ms-2'>API SMS BC {ENV}</span>
         <button id='updateBtn' class='btn btn-link text-warning ms-auto me-2 d-none' onclick='promptUpdate()'>Mise à jour disponible</button>
         <button id='themeToggle' class='btn btn-link text-light' onclick='toggleTheme()'>🌙</button>
       </div>
@@ -162,6 +162,8 @@ class SMSHandler(BaseHTTPRequestHandler):
 
     def _navbar_html(self) -> str:
         badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
+        env = html.escape(getattr(self.server, "environment", ""))
+        env_html = f"<span class='badge bg-light text-dark ms-1'>{env}</span>" if env else ""
         script = (
             "<script>"
             "async function updateSmsBadge(){try{const r=await fetch('/sms_count');"
@@ -174,7 +176,10 @@ class SMSHandler(BaseHTTPRequestHandler):
             "updateSmsBadge();setInterval(updateSmsBadge,5000);checkUpdate();"
             "</script>"
         )
-        return NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge) + script
+        return (
+            NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge).replace("{ENV}", env_html)
+            + script
+        )
 
     def _send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")

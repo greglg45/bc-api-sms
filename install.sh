@@ -77,6 +77,7 @@ PORT="80"
 API_KEY=""
 CERTFILE=""
 KEYFILE=""
+ENVIRONNEMENT="production"
 
 # Install required packages if missing
 install_deps() {
@@ -164,6 +165,10 @@ setup_service() {
     if [ -n "$CERTFILE" ] && [ -n "$KEYFILE" ]; then
         https_args=" --certfile $CERTFILE --keyfile $KEYFILE"
     fi
+    local env_arg=""
+    if [ -n "$ENVIRONNEMENT" ]; then
+        env_arg=" --environment $ENVIRONNEMENT"
+    fi
     sudo tee /etc/systemd/system/bc-api-sms.service >/dev/null <<EOF
 [Unit]
 Description=bc-api-sms HTTP API
@@ -174,7 +179,7 @@ Type=simple
 WorkingDirectory=$INSTALL_DIR
 ExecStart=$INSTALL_DIR/venv/bin/python sms_http_api.py \
     $ROUTER_URL --username $ROUTER_USERNAME --password $ROUTER_PASSWORD \
-    --host $HOST --port $PORT$api_key_arg$https_args
+    --host $HOST --port $PORT$api_key_arg$https_args$env_arg
 Restart=on-failure
 
 [Install]
@@ -208,6 +213,7 @@ main() {
         prompt_var API_KEY "API key (blank to disable)" "$API_KEY"
         prompt_var CERTFILE "TLS certificate file (blank to disable HTTPS)" "$CERTFILE"
         prompt_var KEYFILE "TLS private key file" "$KEYFILE"
+        prompt_var ENVIRONNEMENT "Environnement" "$ENVIRONNEMENT"
     fi
 
     install_deps
@@ -244,6 +250,7 @@ PORT="$PORT"
 API_KEY="$API_KEY"
 CERTFILE="$CERTFILE"
 KEYFILE="$KEYFILE"
+ENVIRONNEMENT="$ENVIRONNEMENT"
 EOF
     sudo chmod 600 "$CONFIG_FILE"
 }
