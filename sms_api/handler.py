@@ -702,38 +702,6 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <label for='env' class='form-label'>Environnement</label>
                     <input type='text' name='env' id='env' class='form-control' value='{html.escape(cfg.get("env", self.server.env))}'>
                 </div>
-                <div class='mb-3'>
-                    <label for='kafka_client_id' class='form-label'>KAFKA_CLIENT_ID</label>
-                    <input type='text' name='kafka_client_id' id='kafka_client_id' class='form-control' value='{html.escape(cfg.get("kafka_client_id", self.server.kafka_client_id))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_url' class='form-label'>KAFKA_URL</label>
-                    <input type='text' name='kafka_url' id='kafka_url' class='form-control' value='{html.escape(cfg.get("kafka_url", self.server.kafka_url))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_group_id' class='form-label'>KAFKA_GROUP_ID</label>
-                    <input type='text' name='kafka_group_id' id='kafka_group_id' class='form-control' value='{html.escape(cfg.get("kafka_group_id", self.server.kafka_group_id))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_username' class='form-label'>KAFKA_USERNAME</label>
-                    <input type='text' name='kafka_username' id='kafka_username' class='form-control' value='{html.escape(cfg.get("kafka_username", self.server.kafka_username))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_password' class='form-label'>KAFKA_PASSWORD</label>
-                    <input type='text' name='kafka_password' id='kafka_password' class='form-control' value='{html.escape(cfg.get("kafka_password", self.server.kafka_password))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_ca_cert' class='form-label'>KAFKA_CA_CERT</label>
-                    <input type='text' name='kafka_ca_cert' id='kafka_ca_cert' class='form-control' value='{html.escape(cfg.get("kafka_ca_cert", self.server.kafka_ca_cert))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_privkey' class='form-label'>KAFKA_PRIVKEY</label>
-                    <input type='text' name='kafka_privkey' id='kafka_privkey' class='form-control' value='{html.escape(cfg.get("kafka_privkey", self.server.kafka_privkey))}'>
-                </div>
-                <div class='mb-3'>
-                    <label for='kafka_cert' class='form-label'>KAFKA_CERT</label>
-                    <input type='text' name='kafka_cert' id='kafka_cert' class='form-control' value='{html.escape(cfg.get("kafka_cert", self.server.kafka_cert))}'>
-                </div>
                 <button type='submit' class='btn btn-company me-2'>Enregistrer</button>
                 <button type='button' class='btn btn-danger' onclick="fetch('/admin/restart', {{method:'POST'}}).then(()=>alert('Redémarrage...'))">Redémarrer</button>
             </form>
@@ -763,14 +731,6 @@ class SMSHandler(BaseHTTPRequestHandler):
             'certfile': params.get('certfile', [''])[0],
             'keyfile': params.get('keyfile', [''])[0],
             'env': params.get('env', [''])[0],
-            'kafka_client_id': params.get('kafka_client_id', [''])[0],
-            'kafka_url': params.get('kafka_url', [''])[0],
-            'kafka_group_id': params.get('kafka_group_id', [''])[0],
-            'kafka_username': params.get('kafka_username', [''])[0],
-            'kafka_password': params.get('kafka_password', [''])[0],
-            'kafka_ca_cert': params.get('kafka_ca_cert', [''])[0],
-            'kafka_privkey': params.get('kafka_privkey', [''])[0],
-            'kafka_cert': params.get('kafka_cert', [''])[0],
         }
         try:
             with open(self.server.config_path, 'w', encoding='utf-8') as f:
@@ -786,14 +746,6 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.server.certfile = cfg['certfile'] or None
         self.server.keyfile = cfg['keyfile'] or None
         self.server.env = cfg['env'] or self.server.env
-        self.server.kafka_client_id = cfg['kafka_client_id'] or "sms"
-        self.server.kafka_url = cfg['kafka_url']
-        self.server.kafka_group_id = cfg['kafka_group_id'] or "sms-consumer"
-        self.server.kafka_username = cfg['kafka_username']
-        self.server.kafka_password = cfg['kafka_password']
-        self.server.kafka_ca_cert = cfg['kafka_ca_cert']
-        self.server.kafka_privkey = cfg['kafka_privkey']
-        self.server.kafka_cert = cfg['kafka_cert']
         self.send_response(303)
         self.send_header('Location', '/admin')
         self.end_headers()

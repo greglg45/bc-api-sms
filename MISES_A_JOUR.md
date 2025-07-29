@@ -43,3 +43,4 @@
 - Ajout d'une option --fresh pour réinstaller complètement sans utiliser la configuration existante.
 - Sécurisation de la suppression du répertoire d'installation dans install.sh.
 - Ajout de la variable d'environnement affichée dans le bandeau
+- Suppression des champs Kafka dans l'interface /admin.
