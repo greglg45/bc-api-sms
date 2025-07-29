@@ -66,7 +66,7 @@ NAVBAR_TEMPLATE = """
         <button class='navbar-toggler' type='button' data-bs-toggle='offcanvas' data-bs-target='#menu' aria-controls='menu'>
           <span class='navbar-toggler-icon'></span>
         </button>
-        <span class='navbar-brand ms-2'>API SMS BC</span>
+        <span class='navbar-brand ms-2'>API SMS BC {ENV}</span>
         <button id='updateBtn' class='btn btn-link text-warning ms-auto me-2 d-none' onclick='promptUpdate()'>Mise à jour disponible</button>
         <button id='themeToggle' class='btn btn-link text-light' onclick='toggleTheme()'>🌙</button>
       </div>
@@ -162,6 +162,8 @@ class SMSHandler(BaseHTTPRequestHandler):
 
     def _navbar_html(self) -> str:
         badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
+        env = html.escape(getattr(self.server, 'env', ''))
+        env_badge = f"<span class='badge bg-info ms-2'>{env}</span>" if env else ""
         script = (
             "<script>"
             "async function updateSmsBadge(){try{const r=await fetch('/sms_count');"
@@ -174,7 +176,11 @@ class SMSHandler(BaseHTTPRequestHandler):
             "updateSmsBadge();setInterval(updateSmsBadge,5000);checkUpdate();"
             "</script>"
         )
-        return NAVBAR_TEMPLATE.replace("{SMS_BADGE}", badge) + script
+        return (
+            NAVBAR_TEMPLATE
+            .replace("{SMS_BADGE}", badge)
+            .replace("{ENV}", env_badge)
+        ) + script
 
     def _send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")
@@ -693,6 +699,10 @@ class SMSHandler(BaseHTTPRequestHandler):
                     <input type='text' name='keyfile' id='keyfile' class='form-control' value='{html.escape(cfg.get("keyfile", self.server.keyfile or ""))}'>
                 </div>
                 <div class='mb-3'>
+                    <label for='env' class='form-label'>Environnement</label>
+                    <input type='text' name='env' id='env' class='form-control' value='{html.escape(cfg.get("env", self.server.env))}'>
+                </div>
+                <div class='mb-3'>
                     <label for='kafka_client_id' class='form-label'>KAFKA_CLIENT_ID</label>
                     <input type='text' name='kafka_client_id' id='kafka_client_id' class='form-control' value='{html.escape(cfg.get("kafka_client_id", self.server.kafka_client_id))}'>
                 </div>
@@ -752,6 +762,7 @@ class SMSHandler(BaseHTTPRequestHandler):
             'sms_api_key': params.get('sms_api_key', [''])[0],
             'certfile': params.get('certfile', [''])[0],
             'keyfile': params.get('keyfile', [''])[0],
+            'env': params.get('env', [''])[0],
             'kafka_client_id': params.get('kafka_client_id', [''])[0],
             'kafka_url': params.get('kafka_url', [''])[0],
             'kafka_group_id': params.get('kafka_group_id', [''])[0],
@@ -774,6 +785,7 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.server.sms_api_key = cfg['sms_api_key']
         self.server.certfile = cfg['certfile'] or None
         self.server.keyfile = cfg['keyfile'] or None
+        self.server.env = cfg['env'] or self.server.env
         self.server.kafka_client_id = cfg['kafka_client_id'] or "sms"
         self.server.kafka_url = cfg['kafka_url']
         self.server.kafka_group_id = cfg['kafka_group_id'] or "sms-consumer"
