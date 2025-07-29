@@ -40,3 +40,4 @@
 - Suppression de la recherche de numéro via Kafka.
 - Correction du crash au démarrage lorsque des paramètres Kafka sont encore présents.
 - Réactivation de la recherche de numéro via l'API sur la page `/sendsms`.
+- Ajout d'une option --fresh pour réinstaller complètement sans utiliser la configuration existante.

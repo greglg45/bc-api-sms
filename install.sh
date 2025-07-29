@@ -6,12 +6,17 @@
 set -e
 
 NON_INTERACTIVE=false
+FRESH_INSTALL=false
 
 # Parse command line options
 while [[ "$1" == -* ]]; do
     case "$1" in
         -y|--yes)
             NON_INTERACTIVE=true
+            shift
+            ;;
+        --fresh|-f)
+            FRESH_INSTALL=true
             shift
             ;;
         *)
@@ -91,6 +96,9 @@ stop_service() {
 
 # Clone or update the repository
 update_repo() {
+    if [ "$FRESH_INSTALL" = true ] && [ -d "$INSTALL_DIR" ]; then
+        sudo rm -rf "$INSTALL_DIR"
+    fi
     if [ ! -d "$INSTALL_DIR" ]; then
         sudo git clone "$REPO_URL" "$INSTALL_DIR"
     elif [ -d "$INSTALL_DIR/.git" ]; then
@@ -176,8 +184,11 @@ main() {
     prompt_var INSTALL_DIR "Installation directory" "$INSTALL_DIR"
     VERSION_FILE="$INSTALL_DIR/VERSION"
     CONFIG_FILE="$INSTALL_DIR/install.conf"
+    if [ "$FRESH_INSTALL" = true ]; then
+        sudo rm -f "$CONFIG_FILE" "$VERSION_FILE"
+    fi
     local config_exists="false"
-    if [ -f "$CONFIG_FILE" ]; then
+    if [ -f "$CONFIG_FILE" ] && [ "$FRESH_INSTALL" != true ]; then
         # shellcheck disable=SC1090
         source "$CONFIG_FILE"
         config_exists="true"
