@@ -97,6 +97,9 @@ stop_service() {
 # Clone or update the repository
 update_repo() {
     if [ "$FRESH_INSTALL" = true ] && [ -d "$INSTALL_DIR" ]; then
+        if [ "$PWD" = "$INSTALL_DIR" ]; then
+            cd "$(dirname "$INSTALL_DIR")"
+        fi
         sudo rm -rf "$INSTALL_DIR"
     fi
     if [ ! -d "$INSTALL_DIR" ]; then
@@ -106,6 +109,9 @@ update_repo() {
         sudo git -C "$INSTALL_DIR" pull --ff-only
     else
         echo "Directory $INSTALL_DIR exists but is not a git repository; re-cloning" >&2
+        if [ "$PWD" = "$INSTALL_DIR" ]; then
+            cd "$(dirname "$INSTALL_DIR")"
+        fi
         sudo rm -rf "$INSTALL_DIR"
         sudo git clone "$REPO_URL" "$INSTALL_DIR"
     fi
