@@ -67,7 +67,8 @@ NAVBAR_TEMPLATE = """
           <span class='navbar-toggler-icon'></span>
         </button>
         <span class='navbar-brand ms-2'>API SMS BC {ENV}</span>
-        <button id='updateBtn' class='btn btn-link text-warning ms-auto me-2 d-none' onclick='promptUpdate()'>Mise à jour disponible</button>
+        <button id='checkUpdateBtn' class='btn btn-link text-warning ms-auto me-2' onclick='checkUpdate()'>Vérifier les mises à jour</button>
+        <button id='updateBtn' class='btn btn-link text-warning me-2 d-none' onclick='promptUpdate()'>Mise à jour disponible</button>
         <button id='themeToggle' class='btn btn-link text-light' onclick='toggleTheme()'>🌙</button>
       </div>
     </nav>
@@ -170,10 +171,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             "const j=await r.json();"
             "document.getElementById('smsBadge').textContent=j.count;}catch(e){"
             "document.getElementById('smsBadge').textContent='?';}}"
-            "async function checkUpdate(){try{const r=await fetch('/check_update');"
-            "const j=await r.json();if(j.update_available){document.getElementById('updateBtn').classList.remove('d-none');}}catch(e){}}"
+            "async function checkUpdate(){const b=document.getElementById('checkUpdateBtn');if(b)b.disabled=true;try{const r=await fetch('/check_update');const j=await r.json();if(j.update_available){document.getElementById('updateBtn').classList.remove('d-none');}else{alert('Aucune mise à jour disponible');}}catch(e){alert('Vérification impossible');}if(b)b.disabled=false;}"
             "function promptUpdate(){if(confirm('Lancer la mise à jour ?')){fetch('/update',{method:'POST'}).then(()=>alert('Mise à jour lancée'));}}"
-            "updateSmsBadge();setInterval(updateSmsBadge,5000);checkUpdate();"
+            "updateSmsBadge();setInterval(updateSmsBadge,5000);"
             "</script>"
         )
         return (
@@ -771,7 +771,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                 .strip()
             )
             logger.debug("Vérification des mises à jour sur la branche %s", branch)
-            subprocess.run(["git", "fetch"], cwd=repo_dir, check=False)
+            subprocess.run(["git", "fetch"], cwd=repo_dir, check=False, timeout=10)
             ahead = int(
                 subprocess.check_output(
                     ["git", "rev-list", "--count", f"HEAD..origin/{branch}"],

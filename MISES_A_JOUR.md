@@ -44,3 +44,4 @@
 - Sécurisation de la suppression du répertoire d'installation dans install.sh.
 - Ajout de la variable d'environnement affichée dans le bandeau
 - Suppression des champs Kafka dans l'interface /admin.
+- Désactivation de la vérification automatique des mises à jour et ajout d'un bouton manuel.

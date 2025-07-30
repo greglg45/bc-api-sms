@@ -13,6 +13,7 @@
 - **30 juillet 2025** : Lancement du heartbeat Kafka uniquement après un premier `poll(0)` du consommateur
 - **30 juillet 2025** : Correction de la pré-initialisation Kafka (plusieurs `poll` jusqu'à l'assignation)
 - **24 juillet 2025** : Ajout de traces de log pour le déclenchement de la mise à jour
+- **30 juillet 2025** : Désactivation de la vérification automatique des mises à jour et ajout d'un bouton manuel.
 
 - **24 juillet 2025** : Utilisation des en-tetes kafka_correlationId, kafka_replyTopic et kafka_replyPartition
 
