@@ -137,6 +137,32 @@ class SMSHandler(BaseHTTPRequestHandler):
     def _serve_sms_count(self):
         self._send_json(200, {"count": self._get_sms_count()})
 
+    def _check_admin_auth(self) -> bool:
+        password = getattr(self.server, "admin_password", None)
+        if not password:
+            return True
+        auth = self.headers.get("Authorization")
+        if not auth or not auth.startswith("Basic "):
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="Administration"')
+            self.end_headers()
+            return False
+        import base64
+
+        try:
+            user_pass = base64.b64decode(auth.split(" ", 1)[1]).decode("utf-8")
+        except Exception:
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="Administration"')
+            self.end_headers()
+            return False
+        if user_pass != f"admin:{password}":
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="Administration"')
+            self.end_headers()
+            return False
+        return True
+
     def _serve_phone_api(self):
         query = urllib.parse.urlparse(self.path).query
         params = urllib.parse.parse_qs(query)
@@ -643,6 +669,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _serve_admin(self):
+        if not self._check_admin_auth():
+            return
         try:
             with open(self.server.config_path, encoding="utf-8") as f:
                 cfg = json.load(f)
@@ -718,6 +746,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _save_admin(self):
+        if not self._check_admin_auth():
+            return
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length).decode('utf-8')
         params = urllib.parse.parse_qs(body)
@@ -751,6 +781,8 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def _restart_service(self):
+        if not self._check_admin_auth():
+            return
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b'Redemarrage...')

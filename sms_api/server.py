@@ -25,6 +25,7 @@ class SMSHTTPServer(HTTPServer):
         sms_api_url="",
         sms_api_key="",
         env="Production",
+        admin_password=None,
     ):
         super().__init__(server_address, handler_class)
         self.modem_url = modem_url
@@ -39,6 +40,7 @@ class SMSHTTPServer(HTTPServer):
         self.sms_api_url = sms_api_url
         self.sms_api_key = sms_api_key
         self.env = env
+        self.admin_password = admin_password
 
     def restart(self):
         """Redémarre le service ou le processus."""

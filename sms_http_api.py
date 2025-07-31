@@ -49,6 +49,12 @@ def main():
         help="Chemin de la clé privée TLS",
     )
     parser.add_argument(
+        "--admin-password",
+        type=str,
+        default=os.getenv("SMS_ADMIN_PASSWORD"),
+        help="Mot de passe pour accéder à /admin",
+    )
+    parser.add_argument(
         "--config",
         type=str,
         default="config.json",
@@ -84,6 +90,7 @@ def main():
     sms_api_url = config.get("sms_api_url", args.sms_api_url)
     sms_api_key = config.get("sms_api_key", args.sms_api_key)
     env = config.get("env", args.env)
+    admin_password = config.get("admin_password", args.admin_password)
 
     server = SMSHTTPServer(
         (args.host, args.port),
@@ -100,6 +107,7 @@ def main():
         sms_api_url=sms_api_url,
         sms_api_key=sms_api_key,
         env=env,
+        admin_password=admin_password,
     )
 
     # Attributs Kafka conservés pour compatibilité de l'interface d'administration
