@@ -46,3 +46,4 @@
 - Suppression des champs Kafka dans l'interface /admin.
 - Désactivation de la vérification automatique des mises à jour et ajout d'un bouton manuel.
 - Protection de l'interface /admin par un mot de passe généré lors de l'installation.
+- Correction du crash au démarrage lorsque le certificat TLS est manquant.
