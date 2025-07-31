@@ -120,7 +120,7 @@ def main():
     server.kafka_privkey = config.get("kafka_privkey", os.getenv("KAFKA_PRIVKEY", ""))
     server.kafka_cert = config.get("kafka_cert", os.getenv("KAFKA_CERT", ""))
 
-    if certfile and keyfile:
+    if certfile and keyfile and os.path.exists(certfile) and os.path.exists(keyfile):
         import ssl
 
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -128,6 +128,8 @@ def main():
         server.socket = context.wrap_socket(server.socket, server_side=True)
         protocol = "https"
     else:
+        if certfile or keyfile:
+            logging.warning("Certificat ou clé TLS introuvable, démarrage en HTTP")
         protocol = "http"
 
     logging.info("Serving on %s://%s:%s", protocol, args.host, args.port)
