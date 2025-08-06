@@ -7,6 +7,8 @@ import html
 import threading
 import subprocess
 import logging
+import random
+import time
 
 from huawei_lte_api.Connection import Connection
 from huawei_lte_api.Client import Client
@@ -17,6 +19,8 @@ from .utils import (
     get_signal_level,
     ensure_logs_table,
     log_request,
+    ensure_errors_table,
+    log_error,
     validate_request,
     footer_html,
 )
@@ -82,6 +86,7 @@ NAVBAR_TEMPLATE = """
           <li class='nav-item'><a class='nav-link' href='/'>Accueil</a></li>
           <li class='nav-item'><a class='nav-link' href='/logs'>Historique SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/readsms'>Lire SMS {SMS_BADGE}</a></li>
+          <li class='nav-item'><a class='nav-link' href='/smserrors'>SMS en erreur {ERROR_BADGE}</a></li>
           <li class='nav-item'><a class='nav-link' href='/sendsms'>Envoyer un SMS</a></li>
           <li class='nav-item'><a class='nav-link' href='/docs'>Documentation</a></li>
           <li class='nav-item'><a class='nav-link' href='/admin'>Administration</a></li>
@@ -126,16 +131,27 @@ class SMSHandler(BaseHTTPRequestHandler):
             return row["sender"]
         return ""
 
+    def _get_error_count(self) -> int:
+        conn = sqlite3.connect(self.server.db_path)
+        ensure_errors_table(conn)
+        count = conn.execute("SELECT COUNT(*) FROM sms_errors").fetchone()[0]
+        conn.close()
+        return int(count)
+
     def _serve_dashboard(self):
         data = {
             "sent_total": self._get_sent_count(),
             "received_total": self._get_sms_count(),
             "last_sender": self._get_last_sender(),
+            "error_total": self._get_error_count(),
         }
         self._send_json(200, data)
 
     def _serve_sms_count(self):
         self._send_json(200, {"count": self._get_sms_count()})
+
+    def _serve_smserror_count(self):
+        self._send_json(200, {"count": self._get_error_count()})
 
     def _check_admin_auth(self) -> bool:
         password = getattr(self.server, "admin_password", None)
@@ -189,22 +205,23 @@ class SMSHandler(BaseHTTPRequestHandler):
 
     def _navbar_html(self) -> str:
         badge = "<span id='smsBadge' class='badge bg-secondary ms-1'>-</span>"
+        error_badge = "<span id='errorBadge' class='badge bg-danger ms-1'>-</span>"
         env = html.escape(getattr(self.server, 'env', ''))
         env_badge = f"<span class='badge bg-info ms-2'>{env}</span>" if env else ""
         script = (
             "<script>"
-            "async function updateSmsBadge(){try{const r=await fetch('/sms_count');"
-            "const j=await r.json();"
-            "document.getElementById('smsBadge').textContent=j.count;}catch(e){"
-            "document.getElementById('smsBadge').textContent='?';}}"
+            "async function updateSmsBadge(){try{const r=await fetch('/sms_count');const j=await r.json();document.getElementById('smsBadge').textContent=j.count;}catch(e){document.getElementById('smsBadge').textContent='?';}}"
+            "async function updateErrorBadge(){try{const r=await fetch('/smserror_count');const j=await r.json();document.getElementById('errorBadge').textContent=j.count;}catch(e){document.getElementById('errorBadge').textContent='?';}}"
             "async function checkUpdate(){const b=document.getElementById('checkUpdateBtn');if(b)b.disabled=true;try{const r=await fetch('/check_update');const j=await r.json();if(j.update_available){document.getElementById('updateBtn').classList.remove('d-none');}else{alert('Aucune mise à jour disponible');}}catch(e){alert('Vérification impossible');}if(b)b.disabled=false;}"
             "function promptUpdate(){if(confirm('Lancer la mise à jour ?')){fetch('/update',{method:'POST'}).then(()=>alert('Mise à jour lancée'));}}"
             "updateSmsBadge();setInterval(updateSmsBadge,5000);"
+            "updateErrorBadge();setInterval(updateErrorBadge,5000);"
             "</script>"
         )
         return (
             NAVBAR_TEMPLATE
             .replace("{SMS_BADGE}", badge)
+            .replace("{ERROR_BADGE}", error_badge)
             .replace("{ENV}", env_badge)
         ) + script
 
@@ -246,6 +263,9 @@ class SMSHandler(BaseHTTPRequestHandler):
         if path == "/sendsms":
             self._serve_sendsms()
             return
+        if path == "/smserrors":
+            self._serve_smserrors()
+            return
         if path == "/docs":
             self._serve_docs()
             return
@@ -266,6 +286,9 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
         if path == "/sms_count":
             self._serve_sms_count()
+            return
+        if path == "/smserror_count":
+            self._serve_smserror_count()
             return
         if path == "/phone_api":
             self._serve_phone_api()
@@ -348,6 +371,7 @@ class SMSHandler(BaseHTTPRequestHandler):
                     document.getElementById('health').textContent = JSON.stringify(health, null, 2);
                     document.getElementById('sentCount').textContent = dashboard.sent_total;
                     document.getElementById('receivedCount').textContent = dashboard.received_total;
+                    document.getElementById('errorCount').textContent = dashboard.error_total;
                     document.getElementById('lastSender').textContent = dashboard.last_sender || 'N/A';
                     const networkInfo = `${health.operator_name.toUpperCase()} ${health.network_type} ${health.signal_bars}`;
                     document.getElementById('networkInfo').textContent = networkInfo;
@@ -365,6 +389,9 @@ class SMSHandler(BaseHTTPRequestHandler):
                     </div>
                     <div class='col'>
                         <div class='p-3 bg-light rounded'>SMS reçus : <span id='receivedCount'>-</span></div>
+                    </div>
+                    <div class='col'>
+                        <div class='p-3 bg-light rounded'>SMS en erreur : <span id='errorCount'>-</span></div>
                     </div>
                     <div class='col'>
                         <div class='p-3 bg-light rounded'>Dernier expéditeur : <span id='lastSender'>-</span></div>
@@ -442,6 +469,56 @@ class SMSHandler(BaseHTTPRequestHandler):
                     "Sélectionner tout</button> <button type='submit' class='btn btn-danger'>Supprimer</button></p>"
                 ),
                 "</form>",
+                "</div>" + footer_html() + "</body></html>",
+            ]
+        )
+        body = "".join(html_lines).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_smserrors(self):
+        conn = sqlite3.connect(self.server.db_path)
+        conn.row_factory = sqlite3.Row
+        ensure_errors_table(conn)
+        rows = conn.execute(
+            "SELECT id, timestamp, sender, phone, message FROM sms_errors ORDER BY id DESC"
+        ).fetchall()
+        conn.close()
+
+        html_lines = [
+            "<html><head><meta charset='utf-8'><title>SMS en erreur</title>",
+            "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>",
+            "<link rel='stylesheet' href='baudin.css'>",
+            "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>",
+            "<script src='theme.js'></script>",
+            "<style>.bg-company{background-color:#0060ac;}.btn-company{background-color:#0060ac;border-color:#0060ac;color:#fff;}.text-company{color:#0060ac;}</style>",
+            "</head><body class='container-fluid px-3 py-4'>",
+            self._navbar_html(),
+            "<div class='p-5 mb-4 bg-body-tertiary rounded-3 text-center'>",
+            "<h1 class='display-6 text-company mb-0'>SMS en erreur</h1>",
+            "</div>",
+            "<div class='container'>",
+            "<table class='table table-striped'>",
+            "<tr><th>Date/Heure</th><th>Expéditeur</th><th>Destinataire(s)</th><th>Message</th><th></th></tr>",
+        ]
+        for row in rows:
+            html_lines.append(
+                (
+                    "<tr>"
+                    f"<td>{html.escape(row['timestamp'])}</td>"
+                    f"<td>{html.escape(row['sender'] or '')}</td>"
+                    f"<td>{html.escape(row['phone'])}</td>"
+                    f"<td>{html.escape(row['message'])}</td>"
+                    f"<td><form method='post' action='/smserrors/resend'><input type='hidden' name='id' value='{row['id']}'><button class='btn btn-sm btn-primary'>Renvoyer</button></form></td>"
+                    "</tr>"
+                )
+            )
+        html_lines.extend(
+            [
+                "</table>",
                 "</div>" + footer_html() + "</body></html>",
             ]
         )
@@ -1038,6 +1115,42 @@ class SMSHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _resend_error(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length).decode("utf-8")
+        params = urllib.parse.parse_qs(body)
+        error_id = params.get("id", [""])[0]
+        conn = sqlite3.connect(self.server.db_path)
+        conn.row_factory = sqlite3.Row
+        ensure_errors_table(conn)
+        row = conn.execute(
+            "SELECT phone, sender, message FROM sms_errors WHERE id = ?",
+            (error_id,)
+        ).fetchone()
+        if row:
+            recipients = row["phone"].split(",")
+            sender = row["sender"]
+            text = row["message"]
+            try:
+                with Connection(
+                    self.server.modem_url,
+                    username=self.server.username,
+                    password=self.server.password,
+                    timeout=self.server.timeout,
+                ) as connection:
+                    client = Client(connection)
+                    resp = client.sms.send_sms(recipients, text)
+                log_request(self.server.db_path, recipients, sender, text, str(resp))
+                if resp == ResponseEnum.OK.value:
+                    conn.execute("DELETE FROM sms_errors WHERE id = ?", (error_id,))
+                    conn.commit()
+            except Exception as exc:
+                log_request(self.server.db_path, recipients, sender, text, str(exc))
+        conn.close()
+        self.send_response(303)
+        self.send_header("Location", "/smserrors")
+        self.end_headers()
+
     def _delete_logs(self):
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length).decode("utf-8")
@@ -1092,6 +1205,9 @@ class SMSHandler(BaseHTTPRequestHandler):
         if path == "/readsms/delete":
             self._delete_sms()
             return
+        if path == "/smserrors/resend":
+            self._resend_error()
+            return
         if path == "/admin/save":
             self._save_admin()
             return
@@ -1130,6 +1246,24 @@ class SMSHandler(BaseHTTPRequestHandler):
             return
 
         try:
+            def retry_later():
+                delay = random.randint(5, 15)
+                time.sleep(delay)
+                try:
+                    with Connection(
+                        self.server.modem_url,
+                        username=self.server.username,
+                        password=self.server.password,
+                        timeout=self.server.timeout,
+                    ) as connection2:
+                        client2 = Client(connection2)
+                        resp2 = client2.sms.send_sms(recipients, text)
+                    log_request(self.server.db_path, recipients, sender, text, str(resp2))
+                    if resp2 != ResponseEnum.OK.value:
+                        log_error(self.server.db_path, recipients, sender, text)
+                except Exception as exc2:
+                    log_request(self.server.db_path, recipients, sender, text, str(exc2))
+                    log_error(self.server.db_path, recipients, sender, text)
 
             with Connection(
                 self.server.modem_url,
@@ -1146,11 +1280,10 @@ class SMSHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b"OK")
             else:
-
+                threading.Thread(target=retry_later, daemon=True).start()
                 self._json_error(500, "Failed to send SMS")
 
         except Exception as exc:
-
             log_request(self.server.db_path, recipients, sender, text, str(exc))
-
+            threading.Thread(target=retry_later, daemon=True).start()
             self._json_error(500, str(exc))
