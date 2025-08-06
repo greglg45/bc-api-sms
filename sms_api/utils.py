@@ -10,6 +10,8 @@ __all__ = [
     "get_signal_level",
     "ensure_logs_table",
     "log_request",
+    "ensure_errors_table",
+    "log_error",
     "validate_request",
     "get_last_update_date",
     "get_current_version",
@@ -64,6 +66,28 @@ def log_request(db_path, recipients, sender, text, response):
     conn.execute(
         "INSERT INTO logs(timestamp, phone, sender, message, response) VALUES (?,?,?,?,?)",
         (datetime.utcnow().isoformat(), ",".join(recipients), sender, text, response),
+    )
+    conn.commit()
+    conn.close()
+
+
+def ensure_errors_table(conn):
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS sms_errors ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "timestamp TEXT,"
+        "phone TEXT,"
+        "sender TEXT,"
+        "message TEXT)"
+    )
+
+
+def log_error(db_path, recipients, sender, text):
+    conn = sqlite3.connect(db_path)
+    ensure_errors_table(conn)
+    conn.execute(
+        "INSERT INTO sms_errors(timestamp, phone, sender, message) VALUES (?,?,?,?)",
+        (datetime.utcnow().isoformat(), ",".join(recipients), sender, text),
     )
     conn.commit()
     conn.close()
