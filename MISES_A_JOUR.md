@@ -1,5 +1,6 @@
 # Historique des mises à jour
 
+- Ajout de la valeur `UNKNOWN` dans `TypeEnum` pour gérer les SMS de type inconnu.
 - Modification des topics Kafka pour la recherche de numéro et mise à jour de la fonction get_phone_from_kafka.
 - Ajout de traces de log pour les requêtes Kafka.
 
