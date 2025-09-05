@@ -51,6 +51,7 @@ class TypeEnum(enum.IntEnum):
     SINGLE = 1
     MULTIPART = 2
     UNICODE = 5  # Not sure
+    UNKNOWN = 6  # Type d'usage inconnu
     DELIVERY_CONFIRMATION_SUCCESS = 7
     DELIVERY_CONFIRMATION_FAILURE = 8
 
